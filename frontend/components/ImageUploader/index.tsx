@@ -107,11 +107,18 @@ const ImageUploader: React.FC = () => {
     setIsMinting(true);
 
     try {
-      const imageBuffer = generatedImageUrl
-        ? await (await fetch(generatedImageUrl)).arrayBuffer()
-        : selectedImage
-        ? await selectedImage.arrayBuffer()
-        : null;
+      let imageBuffer;
+      if (generatedImageUrl) {
+        const response = await fetch(generatedImageUrl, { mode: "no-cors" });
+        if (!response.ok) {
+          throw new Error("Failed to fetch the generated image");
+        }
+        imageBuffer = await response.arrayBuffer();
+      } else if (selectedImage) {
+        imageBuffer = await selectedImage.arrayBuffer();
+      } else {
+        throw new Error("No image available for upload");
+      }
 
       if (!imageBuffer) {
         throw new Error("No image available for upload");
@@ -183,7 +190,7 @@ const ImageUploader: React.FC = () => {
         transactionHash,
       });
 
-      setMintedImageUrl(isGenerated ? generatedImageUrl : imageURI);
+      setMintedImageUrl(generatedImageUrl || imageURI);
 
       setIsCompleted(true);
       console.log("Transaction Hash:", transactionHash);

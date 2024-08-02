@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import styles from "./index.module.css";
+import { motion } from "framer-motion";
 
 interface RippleButtonProps {
   text: string;
@@ -49,28 +50,36 @@ const RippleButton: React.FC<RippleButtonProps> = ({
   };
 
   return (
-    <button
-      ref={buttonRef}
-      className={`relative rounded-sm px-5 min-w-max overflow-hidden shadow hover:bg-opacity-90 focus:outline-none ${className} ${
-        active ? "btn-prim" : "btn-inactive"
-      }`}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={rippleEffect}
-      onMouseLeave={() => {
-        const ripple = rippleRef.current;
-        if (ripple) {
-          ripple.classList.remove(styles.ripple);
-        }
+    <motion.div
+      whileHover={{
+        scale: 1.01,
+        textShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
+        boxShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
       }}
-      onClick={onClick}
-      disabled={disabled}
     >
-      <span
-        ref={rippleRef}
-        className="absolute rounded-full overflow-hidden pointer-events-none"
-      ></span>
-      {text}
-    </button>
+      <button
+        ref={buttonRef}
+        className={`relative rounded-sm px-5 min-w-max overflow-hidden hover:bg-opacity-90 focus:outline-none ${className} ${
+          active ? "btn-prim shadow" : "btn-inactive"
+        }`}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={rippleEffect}
+        onMouseLeave={() => {
+          const ripple = rippleRef.current;
+          if (ripple) {
+            ripple.classList.remove(styles.ripple);
+          }
+        }}
+        onClick={onClick}
+        disabled={disabled}
+      >
+        <span
+          ref={rippleRef}
+          className="absolute rounded-full overflow-hidden pointer-events-none"
+        ></span>
+        {text}
+      </button>
+    </motion.div>
   );
 };
 

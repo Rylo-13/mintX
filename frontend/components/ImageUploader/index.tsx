@@ -1,16 +1,19 @@
 "use client";
 import RippleButton from "@/components/Buttons/RippleButton";
-import { useAccount, useWriteContract } from "wagmi";
+import { useAccount, useConfig, useWriteContract } from "wagmi";
+import { waitForTransactionReceipt } from "@wagmi/core";
 import contractABI from "../../aiArtABI.json";
-import DeleteIcon from "../Icons/DeleteIcon";
+import NFTCard from "@/components/NFTCard";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import AddIcon from "../Icons/AddIcon";
 import axios from "axios";
+import XIcon from "../Icons/XIcon";
+import UploadIcon from "../Icons/UploadIcon";
 
 const ImageUploader: React.FC = () => {
   const { isConnected } = useAccount();
-  const [slectedImage, setSelectedImage] = useState<File | null>(null); // Holds the selected image file for upload or generation
+  const [selectedImage, setSelectedImage] = useState<File | null>(null); // Holds the selected image file for upload or generation
   const [generatedImageUrl, setIsGeneratedImageUrl] = useState<string | null>(
     null
   ); // Stores the URL of the generated AI image
@@ -25,21 +28,26 @@ const ImageUploader: React.FC = () => {
   const [mintedImageUrl, setMintedImageUrl] = useState<string | null>(null); // Stores the URL of the minted NFT image
   const [nftName, setNftName] = useState(""); // Stores the name of the NFT
   const [nftDescription, setNFTDescription] = useState(""); // Stores the description of the NFT
-  const [isFlipped, setIsFlipped] = useState(false); // Tracks if the NFT display is flipped
   const [attributes, setAttributes] = useState<
     { key: string; value: string }[]
   >([{ key: "", value: "" }]); // Stores attributes (key-value pairs) associated with the NFT
 
-  const contractAddress = "0xDdFCfb6C6dDA3eab52cA8FB78c94A6A973fA9De5";
+  const contractAddress = "0x9d4aD73063100B37c6833CBbeE52fB72a31fE2d3";
   const abi = contractABI.abi;
+  const config = useConfig();
 
   const { writeContractAsync } = useWriteContract();
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
     if (selectedFile) {
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        setErrors("File size exceeds 5MB. Please choose a smaller file.");
+        return;
+      }
       setSelectedImage(selectedFile);
       setUploadedImageUrl(URL.createObjectURL(selectedFile));
+      setErrors("");
     }
   };
 
@@ -47,6 +55,7 @@ const ImageUploader: React.FC = () => {
     setSelectedImage(null);
     setUploadedImageUrl(null);
     setIsGeneratedImageUrl(null);
+    setErrors("");
   };
 
   const handleAddAttribute = () => {
@@ -86,21 +95,13 @@ const ImageUploader: React.FC = () => {
     setIsCompleted(false);
   };
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
   const handleMintNFT = async () => {
     if (!isConnected) {
       setErrors("Wallet is not connected.");
       return;
     }
 
-    if (
-      (!setSelectedImage && !generatedImageUrl) ||
-      !nftName ||
-      !nftDescription
-    )
+    if ((!selectedImage && !generatedImageUrl) || !nftName || !nftDescription)
       return;
 
     setIsMinting(true);
@@ -108,8 +109,8 @@ const ImageUploader: React.FC = () => {
     try {
       const imageBuffer = generatedImageUrl
         ? await (await fetch(generatedImageUrl)).arrayBuffer()
-        : slectedImage
-        ? await slectedImage.arrayBuffer()
+        : selectedImage
+        ? await selectedImage.arrayBuffer()
         : null;
 
       if (!imageBuffer) {
@@ -157,25 +158,35 @@ const ImageUploader: React.FC = () => {
 
       const metadataURI = `https://gateway.pinata.cloud/ipfs/${metadataResponse.data.IpfsHash}`;
 
-      const data = await writeContractAsync({
+      const transactionHash = await writeContractAsync({
         abi,
         address: contractAddress,
         functionName: "mintNFT",
         args: [metadataURI],
       });
 
+      // Wait for the transaction receipt
+      const receipt = await waitForTransactionReceipt(config, {
+        hash: transactionHash,
+        confirmations: 1, // Wait for 1 confirmation block
+      });
+
+      if (receipt.status === "reverted") {
+        throw new Error("Transaction failed");
+      }
+
       setMintedNFTDetails({
         nftName,
         nftDescription,
         image: imageURI,
         attributes,
-        transactionHash: data,
+        transactionHash,
       });
 
       setMintedImageUrl(isGenerated ? generatedImageUrl : imageURI);
 
       setIsCompleted(true);
-      console.log("Transaction Hash:", data);
+      console.log("Transaction Hash:", transactionHash);
     } catch (err) {
       console.error("Error uploading image or interacting with contract:", err);
       setErrors(
@@ -216,125 +227,149 @@ const ImageUploader: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-lg p-4">
+    <div className="container mx-auto max-w-xl my-4 p-4">
       {!isCompleted && (
-        <div className="shadow-md rounded p-4">
-          <div className="flex justify-between mb-4">
-            <motion.button
-              whileHover={{
-                scale: 1.05,
-                textShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
-                boxShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
-              }}
-            >
-              <RippleButton
-                text="Upload Image"
-                onClick={() => setIsGenerated(false)}
-                active={!isGenerated}
-              />
-            </motion.button>
-            <motion.button
-              whileHover={{
-                scale: 1.05,
-                textShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
-                boxShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
-              }}
-            >
-              <RippleButton
-                text="Create Image"
-                onClick={() => setIsGenerated(true)}
-                active={isGenerated}
-              />
-            </motion.button>
+        <div className="border bg-[#101010] p-10">
+          <div className="py-1.5 px-1.5 mb-5 border rounded bg-black flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-2">
+            <RippleButton
+              className="w-full sm:w-56"
+              text="Upload Image"
+              onClick={() => setIsGenerated(false)}
+              active={!isGenerated}
+            />
+
+            <RippleButton
+              className="w-full sm:w-56"
+              text="Create Image"
+              onClick={() => setIsGenerated(true)}
+              active={isGenerated}
+            />
           </div>
+
           {!isGenerated && (
-            <div className="mb-4">
-              <input
-                type="file"
-                onChange={handleFileInputChange}
-                className="mb-4 w-full p-2 border rounded"
-              />
-              {uploadedImageUrl && (
-                <>
-                  <motion.div
-                    className="relative flex justify-center"
-                    initial={{ y: -550 }}
-                    animate={{ y: -10 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <img
-                      src={uploadedImageUrl}
-                      alt="Selected"
-                      className="mt-4 rounded shadow"
-                      style={{ maxWidth: "100%", height: "auto" }}
-                    />
-                    <DeleteIcon
-                      className="absolute h-8 w-8 cursor-pointer mt-2 mr-14 top-0 right-0"
-                      onClick={handleClearImage}
-                    />
-                  </motion.div>
-                </>
-              )}
+            <div className="mb-5">
+              <div className="relative flex justify-center cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handleFileInputChange}
+                />
+                {!selectedImage && (
+                  <div className="w-2/3 flex flex-col items-center justify-center p-10 border border-dashed rounded-lg text-center text-gray-400">
+                    <UploadIcon className="w-12 h-12 mb-2" />
+                    <p className="mb-2">Click to upload an image</p>
+                    <p>or drag and drop here</p>
+                  </div>
+                )}
+                {selectedImage && (
+                  <div className="my-8 flex justify-center">
+                    <motion.div
+                      className="mt-3 flex items-start"
+                      initial={{ y: -550 }}
+                      animate={{ y: -10 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <div className="relative">
+                        <img
+                          src={uploadedImageUrl!}
+                          alt="Uploaded Image"
+                          className="rounded shadow-md shadow-[#989898]"
+                          style={{ maxWidth: "100%", height: "auto" }}
+                        />
+                        <XIcon
+                          className="h-6 w-6 cursor-pointer bg-[#aeaeae67] m-1 rounded"
+                          onClick={handleClearImage}
+                          style={{
+                            position: "absolute",
+                            top: 15,
+                            right: 15,
+                            transform: "translate(50%, -50%)",
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </div>
+              {errors && <p className="text-red-500 text-sm mt-2">{errors}</p>}
             </div>
           )}
           {isGenerated && (
-            <div className="mb-4">
-              <input
-                className="mb-4 w-full p-2 border rounded"
-                type="text"
-                placeholder="AI Image Description"
-                value={aiImageDescription}
-                onChange={(e) => setAiImageDescription(e.target.value)}
-              />
-              <div className="flex justify-center">
-                <motion.button
-                  whileHover={{
-                    scale: 1.05,
-                    textShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
-                    boxShadow: "0px, 0px, 10px, rgb(255, 255, 255)",
-                  }}
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                  disabled={isGenerating}
-                  onClick={handleGenerateImage}
-                >
-                  {isGenerating ? "Generating..." : "Generate AI Image"}
-                </motion.button>
+            <div className="mb-5">
+              <div className="relative mb-4 w-full">
+                {!generatedImageUrl && (
+                  <div className="flex flex-col items-center justify-center">
+                    <input
+                      className="w-full px-3 py-1.5 border pr-24"
+                      type="text"
+                      placeholder="AI Image Description"
+                      value={aiImageDescription}
+                      onChange={(e) => setAiImageDescription(e.target.value)}
+                    />
+                    <div className="w-2/3 flex flex-col items-center justify-center mt-5 p-10 border border-dashed rounded-lg text-center text-gray-400">
+                      <UploadIcon className="w-12 h-12 mb-2" />
+                      <p className="mb-2">
+                        Enter an AI description and generate an image!
+                      </p>
+                    </div>
+                    <motion.button
+                      whileHover={{
+                        scale: 1.01,
+                        textShadow: "0px 0px 10px rgb(255, 255, 255)",
+                        boxShadow: "0px 0px 10px rgb(255, 255, 255)",
+                      }}
+                      className="absolute right-0 top-0 px-4 mt-0.5 mr-0.5 py-1 bg-black text-white rounded border border-white hover:border-[#D600C4]"
+                      disabled={isGenerating}
+                      onClick={handleGenerateImage}
+                    >
+                      {isGenerating ? "Generating..." : "Generate"}
+                    </motion.button>
+                  </div>
+                )}
               </div>
               {generatedImageUrl && (
-                <div className="relative flex justify-center">
+                <div className="my-8 flex justify-center">
                   <motion.div
-                    className="relative flex justify-center"
+                    className="mt-3 flex items-start"
                     initial={{ y: -550 }}
                     animate={{ y: -10 }}
                     transition={{ delay: 0.1 }}
                   >
-                    <img
-                      src={generatedImageUrl}
-                      alt="Generated Image"
-                      className="mt-8 rounded shadow"
-                      style={{ maxWidth: "100%", height: "auto" }}
-                    />
-                    <DeleteIcon
-                      className="absolute h-8 w-8 cursor-pointer mt-2 mr-2 top-0 right-0"
-                      onClick={handleClearImage}
-                    />
+                    <div className="relative">
+                      <img
+                        src={generatedImageUrl}
+                        alt="Generated Image"
+                        className="rounded shadow-md shadow-[#989898]"
+                        style={{ maxWidth: "100%", height: "auto" }}
+                      />
+                      <XIcon
+                        className="h-6 w-6 cursor-pointer bg-[#ffffff67] m-1 rounded"
+                        onClick={handleClearImage}
+                        style={{
+                          position: "absolute",
+                          top: 15,
+                          right: 15,
+                          transform: "translate(50%, -50%)",
+                        }}
+                      />
+                    </div>
                   </motion.div>
                 </div>
               )}
             </div>
           )}
-          {/* {(uploadedImage || generatedImageUrl) && ( */}
           <>
             <div className="mb-4">
               <input
-                className="mb-2 w-full p-2 border rounded"
+                className="mb-2 w-full px-3 py-1.5 border"
                 type="text"
                 placeholder="Name"
                 value={nftName}
                 onChange={(e) => setNftName(e.target.value)}
               />
               <textarea
-                className="w-full p-2 border rounded"
+                className="w-full px-3 py-1.5 border"
                 placeholder="Description"
                 value={nftDescription}
                 onChange={(e) => setNFTDescription(e.target.value)}
@@ -343,12 +378,12 @@ const ImageUploader: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Attributes</h3>
+              <h3 className="text-lg font-medium mb-2">Attributes</h3>
               {attributes.map((attribute, index) => (
-                <div key={index} className="flex mb-2">
-                  <div className="flex w-full relative">
+                <div key={index} className="flex mb-3">
+                  <div className="flex w-full gap-x-3 relative">
                     <input
-                      className="w-1/2 p-2 border rounded"
+                      className="w-1/2 px-3 py-1.5 border"
                       type="text"
                       placeholder="Key"
                       value={attribute.key}
@@ -357,7 +392,7 @@ const ImageUploader: React.FC = () => {
                       }
                     />
                     <input
-                      className="w-1/2 p-2 border rounded"
+                      className="w-1/2 px-3 py-1.5 border"
                       type="text"
                       placeholder="Value"
                       value={attribute.value}
@@ -366,8 +401,9 @@ const ImageUploader: React.FC = () => {
                       }
                     />
                     {index > 0 && (
-                      <DeleteIcon
-                        className="h-8 w-8 cursor-pointer absolute top-0 left-full mt-1.5 ml-1"
+                      <XIcon
+                        className="h-8 w-8 cursor-pointer absolute top-0 right-0.5 mt-0.5 lg:mt-1"
+                        // className="h-8 w-8 cursor-pointer absolute top-0 left-full mt-1.5 ml-1"
                         onClick={() => handleDeleteAttribute(index)}
                       />
                     )}
@@ -383,20 +419,12 @@ const ImageUploader: React.FC = () => {
               </div>
             </div>
           </>
-          {/* )} */}
-          {/* {(uploadedImage || generatedImageUrl) &&
-            nftName &&
-            nftDescription &&
-            attributes.length > 0 &&
-            attributes.every((attr) => attr.key && attr.value) &&
-            attributes.length > 0 && ( */}
           <RippleButton
             className="w-full"
-            text={isMinting ? "Minting..." : "Mint NFT"}
+            text={isMinting ? "Confirming..." : "Mint NFT"}
             onClick={handleMintNFT}
             active
           />
-          {/* )} */}
           {errors && <p className="text-red-500 mt-4">{errors}</p>}
         </div>
       )}
@@ -405,58 +433,13 @@ const ImageUploader: React.FC = () => {
           <h2 className="flex justify-center mt-16 mb-10 text-3xl font-semibold text-white">
             NFT Minted Successfully!
           </h2>
-          <motion.div
-            className="shadow-lg rounded p-4"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <motion.div
-              className="relative w-64 h-96 mx-auto bg-[#2f1a2d] rounded-xl overflow-hidden shadow-lg cursor-pointer"
-              animate={{ rotateY: isFlipped ? 360 : 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              whileHover={{
-                scale: 1.05,
-              }}
-              onClick={handleFlip}
-              style={{
-                boxShadow: "0px 0px 10px 5px rgba(255, 16, 240, 0.5)",
-              }}
-            >
-              <div className="p-4 h-full flex flex-col justify-between">
-                <div>
-                  <img
-                    src={mintedImageUrl || ""}
-                    alt={mintedNFTDetails.nftName}
-                    className="mt-4 rounded shadow"
-                    style={{ maxWidth: "100%", height: "auto" }}
-                  />
-                  <h3 className="text-xl font-bold text-white mb-1">
-                    {mintedNFTDetails.nftName}
-                  </h3>
-                  <p className="text-sm text-white mb-2">
-                    {mintedNFTDetails.description}
-                  </p>
-                </div>
-                <div>
-                  {mintedNFTDetails.attributes.map(
-                    (attr: any, index: number) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-white bg-opacity-20 rounded-full px-2 py-1 text-xs font-semibold text-white mr-1 mb-1"
-                      >
-                        {attr.key}: {attr.value}
-                      </span>
-                    )
-                  )}
-                  <p className="text-xs text-white mt-2">
-                    TX: {mintedNFTDetails.transactionHash.slice(0, 10)}...
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+          <NFTCard
+            imageUrl={mintedImageUrl || ""}
+            nftName={mintedNFTDetails.nftName}
+            nftDescription={mintedNFTDetails.nftDescription}
+            attributes={mintedNFTDetails.attributes}
+            transactionHash={mintedNFTDetails.transactionHash}
+          />
           <div className="flex justify-center mt-10">
             <RippleButton
               text="Mint Another NFT"

@@ -1,0 +1,98 @@
+/* Global styles or in a CSS module */
+.navbar {
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar::before,
+.navbar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px; /* Increase height for a more pronounced effect */
+  background: linear-gradient(to bottom, transparent 0%, #ff10f0 100%);
+  z-index: 1;
+  animation: melt 10s infinite linear;
+}
+
+.navbar::before {
+  animation-delay: 0s;
+}
+
+.navbar::after {
+  animation-delay: 5s; /* Stagger the melting effects */
+}
+
+@keyframes melt {
+  0% {
+    transform: translateY(0);
+    clip-path: ellipse(100% 20% at 50% 0%);
+  }
+  50% {
+    transform: translateY(20px);
+    clip-path: ellipse(100% 40% at 50% 50%);
+  }
+  100% {
+    transform: translateY(40px);
+    clip-path: ellipse(100% 20% at 50% 100%);
+  }
+}
+
+.border-drip {
+  position: relative;
+  border-bottom: 2px solid #ff10f0;
+}
+
+.border-drip::before,
+.border-drip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -20px; /* Adjust position for the drip */
+  width: 100%;
+  height: 40px; /* Increase height for the drip effect */
+  background: #ff10f0;
+  z-index: -1;
+  animation: melt 10s infinite linear;
+}
+
+.border-drip::after {
+  bottom: -40px; /* Additional drip effect */
+  animation-delay: 5s;
+}
+
+.drips {
+  position: absolute;
+  bottom: -30px; /* Adjust bottom position */
+  left: 0;
+  width: 100%;
+  height: 30px; /* Adjust height for drips */
+  overflow: hidden;
+  z-index: 1;
+}
+
+.drip {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #ff10f0;
+  animation: drip 10s infinite linear;
+}
+
+@keyframes drip {
+  0% {
+    transform: translateY(0);
+    clip-path: ellipse(100% 20% at 50% 0%);
+  }
+  50% {
+    transform: translateY(20px);
+    clip-path: ellipse(100% 40% at 50% 50%);
+  }
+  100% {
+    transform: translateY(40px);
+    clip-path: ellipse(100% 20% at 50% 100%);
+  }
+}

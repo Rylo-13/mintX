@@ -10,7 +10,11 @@ const Navbar = () => {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    return pathname === path ? "text-[#FF10F0]" : "text-white";
+    return pathname === path ? "text-[#FF10F0] ghost-btn" : "text-white";
+  };
+
+  const isActiveSide = (path: string) => {
+    return pathname === path ? "text-[#FF10F0] ghost-btn" : "text-white";
   };
 
   useEffect(() => {
@@ -23,47 +27,88 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="sticky top-0 h-16 mx-auto px-12 bg-black flex justify-between items-center border-b-2 border-[#FF10F0] z-10">
+    <div className="drawer sticky top-0 h-16 w-full px-8 bg-black items-center border-b-2 border-[#FF10F0] z-10">
+      <input id="my-drawer" type="checkbox" className="drawer-toggle" />
       {initialized && (
-        <>
-          <ul className="text-lg flex space-x-16">
-            <li className={isActive("/")}>
-              <Link href="/" className="cursor-pointer hover:text-[#FF10F0]">
-                HOME
-              </Link>
-            </li>
-            <li className={isActive("/mint")}>
-              <Link
-                href="/mint"
-                className="cursor-pointer hover:text-[#FF10F0]"
-              >
-                MINT
-              </Link>
-            </li>
-            <li className={isActive("/bridge")}>
-              <Link
-                href="/bridge"
-                className="cursor-pointer hover:text-[#FF10F0]"
-              >
-                BRIDGE
-              </Link>
-            </li>
-            <li className={isActive("/nfts")}>
-              <Link
-                href="/nfts"
-                className="cursor-pointer hover:text-[#FF10F0]"
-              >
-                NFTS
-              </Link>
-            </li>
-          </ul>
+        <div className="drawer-content flex items-center justify-between">
+          <div className="text-lg pb-1 flex items-center">
+            <label
+              htmlFor="my-drawer"
+              className="bg-none drawer-button items-center text-2xl lg:hidden cursor-pointer"
+            >
+              ☰
+            </label>
+            <ul className="hidden font-light lg:flex space-x-4 lg:space-x-16">
+              <li className={isActive("/")}>
+                <Link href="/" className="cursor-pointer hover:text-[#FF10F0]">
+                  HOME
+                </Link>
+              </li>
+              <li className={isActive("/mint")}>
+                <Link
+                  href="/mint"
+                  className="cursor-pointer hover:text-[#FF10F0]"
+                >
+                  MINT
+                </Link>
+              </li>
+              <li className={isActive("/bridge")}>
+                <Link
+                  href="/bridge"
+                  className="cursor-pointer hover:text-[#FF10F0]"
+                >
+                  BRIDGE
+                </Link>
+              </li>
+              <li className={isActive("/nfts")}>
+                <Link
+                  href="/nfts"
+                  className="cursor-pointer hover:text-[#FF10F0]"
+                >
+                  NFTS
+                </Link>
+              </li>
+            </ul>
+          </div>
           <ConnectButton
             label="Connect Wallet"
             accountStatus="address"
             chainStatus="icon"
           />
-        </>
+        </div>
       )}
+      <div className="drawer-side">
+        <label
+          htmlFor="my-drawer"
+          aria-label="close sidebar"
+          className="drawer-overlay"
+        ></label>
+        <ul className="menu bg-black text-base-content pt-16 min-h-full w-2/3 p-4">
+          <li className={isActiveSide("/")}>
+            <Link href="/" className="cursor-pointer hover:text-[#FF10F0]">
+              HOME
+            </Link>
+          </li>
+          <li className={isActiveSide("/mint")}>
+            <Link href="/mint" className="cursor-pointer hover:text-[#FF10F0]">
+              MINT
+            </Link>
+          </li>
+          <li className={isActiveSide("/bridge")}>
+            <Link
+              href="/bridge"
+              className="cursor-pointer hover:text-[#FF10F0]"
+            >
+              BRIDGE
+            </Link>
+          </li>
+          <li className={isActiveSide("/nfts")}>
+            <Link href="/nfts" className="cursor-pointer hover:text-[#FF10F0]">
+              NFTS
+            </Link>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

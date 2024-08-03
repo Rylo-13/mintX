@@ -32,7 +32,7 @@ const ImageUploader: React.FC = () => {
     { key: string; value: string }[]
   >([{ key: "", value: "" }]); // Stores attributes (key-value pairs) associated with the NFT
 
-  const contractAddress = "0x9d4aD73063100B37c6833CBbeE52fB72a31fE2d3";
+  const contractAddress = "0x6B947C9D26a2dd2b7f18b0e54Aad1e35918d6Dad";
   const abi = contractABI.abi;
   const config = useConfig();
 
@@ -101,49 +101,48 @@ const ImageUploader: React.FC = () => {
       return;
     }
 
-    if ((!selectedImage && !generatedImageUrl) || !nftName || !nftDescription)
+    if ((!selectedImage && !generatedImageUrl) || !nftName || !nftDescription) {
       return;
+    }
 
     setIsMinting(true);
 
     try {
-      let imageBuffer;
-      if (generatedImageUrl) {
-        const response = await fetch(generatedImageUrl, { mode: "no-cors" });
-        if (!response.ok) {
-          throw new Error("Failed to fetch the generated image");
-        }
-        imageBuffer = await response.arrayBuffer();
-      } else if (selectedImage) {
-        imageBuffer = await selectedImage.arrayBuffer();
-      } else {
-        throw new Error("No image available for upload");
-      }
+      // Handle image buffer
+      const imageBuffer = generatedImageUrl
+        ? await (
+            await axios.get(
+              `/api/fetchImageToMint?imageUrl=${encodeURIComponent(
+                generatedImageUrl
+              )}`,
+              { responseType: "arraybuffer" }
+            )
+          ).data
+        : selectedImage
+        ? await selectedImage.arrayBuffer()
+        : null;
 
       if (!imageBuffer) {
         throw new Error("No image available for upload");
       }
 
-      const formData = new FormData();
-      formData.append("file", new Blob([imageBuffer]), "image.png");
-
-      const pinataResponse = await axios.post(
-        "https://api.pinata.cloud/pinning/pinFileToIPFS",
-        formData,
+      // Pin image to IPFS using custom API route
+      const pinFileResponse = await axios.post(
+        "/api/pinFileToIPFS",
+        imageBuffer,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY!,
-            pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET!,
           },
         }
       );
 
-      const imageHash = pinataResponse.data.IpfsHash;
+      const imageHash = pinFileResponse.data.IpfsHash;
       const imageURI = `https://gateway.pinata.cloud/ipfs/${imageHash}`;
 
       setUploadedImageUrl(imageURI);
 
+      // Prepare metadata
       const metadata = {
         name: nftName,
         description: nftDescription,
@@ -151,20 +150,16 @@ const ImageUploader: React.FC = () => {
         attributes,
       };
 
-      const metadataResponse = await axios.post(
-        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-        metadata,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY!,
-            pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET!,
-          },
-        }
-      );
+      // Pin metadata to IPFS using custom API route
+      const pinJSONResponse = await axios.post("/api/pinJSONToIPFS", metadata, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      const metadataURI = `https://gateway.pinata.cloud/ipfs/${metadataResponse.data.IpfsHash}`;
+      const metadataURI = `https://gateway.pinata.cloud/ipfs/${pinJSONResponse.data.IpfsHash}`;
 
+      // Mint NFT
       const transactionHash = await writeContractAsync({
         abi,
         address: contractAddress,
@@ -172,10 +167,10 @@ const ImageUploader: React.FC = () => {
         args: [metadataURI],
       });
 
-      // Wait for the transaction receipt
+      // Wait for transaction receipt
       const receipt = await waitForTransactionReceipt(config, {
         hash: transactionHash,
-        confirmations: 1, // Wait for 1 confirmation block
+        confirmations: 1,
       });
 
       if (receipt.status === "reverted") {
@@ -190,14 +185,14 @@ const ImageUploader: React.FC = () => {
         transactionHash,
       });
 
-      setMintedImageUrl(generatedImageUrl || imageURI);
+      setMintedImageUrl(isGenerated ? generatedImageUrl : imageURI);
 
       setIsCompleted(true);
       console.log("Transaction Hash:", transactionHash);
     } catch (err) {
       console.error("Error uploading image or interacting with contract:", err);
       setErrors(
-        "Failed to upload image or interact with contract. Please try again."
+        `Failed to upload image or interact with contract. Error: ${err}`
       );
     } finally {
       setIsMinting(false);

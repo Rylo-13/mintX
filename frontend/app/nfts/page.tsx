@@ -24,7 +24,7 @@ const Page: React.FC = () => {
   const publicClient = usePublicClient(); // Get the public client
   const NFTsPerPage = 12;
 
-  const contractAddress = "0x9d4aD73063100B37c6833CBbeE52fB72a31fE2d3";
+  const contractAddress = "0x6B947C9D26a2dd2b7f18b0e54Aad1e35918d6Dad";
   const abi = contractABI.abi;
 
   const { data: nftCount } = useReadContract({

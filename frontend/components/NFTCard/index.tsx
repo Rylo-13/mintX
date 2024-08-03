@@ -34,39 +34,49 @@ const NFTCard: React.FC<NFTCardProps> = ({
   useEffect(() => {
     if (qrCodeUrl) return;
 
-    const uploadImageToPinata = async (image: string) => {
-      const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
+    const uploadImageToPinata = async (imageUrl: string) => {
       const formData = new FormData();
-      const blob = await fetch(image).then((res) => res.blob());
-
-      formData.append("file", blob, "nft_card_screenshot.png");
-
-      const metadata = JSON.stringify({
-        name: "NFT Card Screenshot",
-        keyvalues: {
-          description:
-            "Screenshot of the NFT Card including metadata and image",
-        },
-      });
-      formData.append("pinataMetadata", metadata);
-
-      const options = JSON.stringify({
-        cidVersion: 0,
-      });
-      formData.append("pinataOptions", options);
 
       try {
-        const response = await axios.post(url, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY!,
-            pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET!,
+        // Fetch the image using axios
+        const response = await axios.get(imageUrl, { responseType: "blob" });
+        const blob = response.data;
+
+        // Append the image blob to FormData
+        formData.append("file", blob, "nft_card_screenshot.png");
+
+        const metadata = JSON.stringify({
+          name: "NFT Card Screenshot",
+          keyvalues: {
+            description:
+              "Screenshot of the NFT Card including metadata and image",
           },
         });
-        const ipfsHash = response.data.IpfsHash;
-        setQrCodeUrl(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
+        formData.append("pinataMetadata", metadata);
+
+        const options = JSON.stringify({
+          cidVersion: 0,
+        });
+        formData.append("pinataOptions", options);
+
+        // Upload the FormData to Pinata
+        try {
+          const pinataResponse = await axios.post(
+            "/api/pinScreenshotToIPFS",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          const ipfsHash = pinataResponse.data.IpfsHash;
+          setQrCodeUrl(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
+        } catch (error) {
+          console.error("Error uploading to Pinata:", error);
+        }
       } catch (error) {
-        console.error("Error uploading to Pinata:", error);
+        console.error("Error fetching image from URL:", error);
       }
     };
 
@@ -82,7 +92,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
     };
 
     generateScreenshot();
-  }, [qrCodeUrl, imageUrl]);
+  }, [qrCodeUrl]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     startPos.current = { x: e.clientX, y: e.clientY };

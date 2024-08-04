@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import QRCode from "qrcode.react"; // Default import
 import { toPng } from "html-to-image";

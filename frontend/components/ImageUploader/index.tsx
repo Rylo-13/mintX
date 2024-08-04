@@ -32,7 +32,7 @@ const ImageUploader: React.FC = () => {
     { key: string; value: string }[]
   >([{ key: "", value: "" }]); // Stores attributes (key-value pairs) associated with the NFT
 
-  const contractAddress = "0x6B947C9D26a2dd2b7f18b0e54Aad1e35918d6Dad";
+  const contractAddress = "0xe5ac9aB13f517A3c6e717c6533137B62c98f35BB";
   const abi = contractABI.abi;
   const config = useConfig();
 
@@ -436,7 +436,7 @@ const ImageUploader: React.FC = () => {
             NFT Minted Successfully!
           </h2>
           <NFTCard
-            imageUrl={mintedImageUrl || ""}
+            imageUrl={mintedNFTDetails.image}
             nftName={mintedNFTDetails.nftName}
             nftDescription={mintedNFTDetails.nftDescription}
             attributes={mintedNFTDetails.attributes}

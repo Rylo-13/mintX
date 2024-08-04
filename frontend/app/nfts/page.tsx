@@ -1,12 +1,10 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-import NFTCard from "@/components/NFTCard"; // Import your existing NFTCard component
-import RippleButton from "@/components/Buttons/RippleButton"; // Optional: If you have a custom RippleButton component
-import { useAccount, useReadContract, usePublicClient } from "wagmi"; // Import hooks from wagmi
+import NFTCard from "@/components/NFTCard";
+import RippleButton from "@/components/Buttons/RippleButton";
+import { useAccount, useReadContract, usePublicClient } from "wagmi";
 import contractABI from "../../aiArtABI.json";
 
-// Define the NFT type
 type NFT = {
   imageUrl: string;
   nftName: string;
@@ -18,13 +16,12 @@ type NFT = {
 const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [nfts, setNfts] = useState<NFT[]>([]);
-  const [currentNFTs, setCurrentNFTs] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(true);
-  const { address } = useAccount(); // Get the connected wallet address
-  const publicClient = usePublicClient(); // Get the public client
+  const { address } = useAccount();
+  const publicClient = usePublicClient();
   const NFTsPerPage = 12;
 
-  const contractAddress = "0x6B947C9D26a2dd2b7f18b0e54Aad1e35918d6Dad";
+  const contractAddress = "0xe5ac9aB13f517A3c6e717c6533137B62c98f35BB";
   const abi = contractABI.abi;
 
   const { data: nftCount } = useReadContract({
@@ -48,7 +45,10 @@ const Page: React.FC = () => {
       try {
         setLoading(true);
         const fetchedNFTs = [];
-        for (let i = 0; i < Number(nftCount); i++) {
+        const start = (currentPage - 1) * NFTsPerPage;
+        const end = Math.min(start + NFTsPerPage, Number(nftCount));
+
+        for (let i = start; i < end; i++) {
           const tokenId = (await publicClient.readContract({
             address: contractAddress,
             abi: abi,
@@ -82,14 +82,11 @@ const Page: React.FC = () => {
             nftName: metadata.name,
             nftDescription: metadata.description,
             attributes: metadata.attributes,
-            transactionHash: "", // You can populate this if you have transaction hashes
+            transactionHash: "",
           });
         }
 
         setNfts(fetchedNFTs);
-        const start = (currentPage - 1) * NFTsPerPage;
-        const end = start + NFTsPerPage;
-        setCurrentNFTs(fetchedNFTs.slice(start, end));
       } catch (error) {
         console.error("Failed to fetch NFTs:", error);
       } finally {
@@ -98,15 +95,9 @@ const Page: React.FC = () => {
     };
 
     fetchNFTs();
-  }, [address, publicClient, nftCount]);
+  }, [address, publicClient, nftCount, currentPage]);
 
-  useEffect(() => {
-    const start = (currentPage - 1) * NFTsPerPage;
-    const end = start + NFTsPerPage;
-    setCurrentNFTs(nfts.slice(start, end));
-  }, [currentPage, nfts]);
-
-  const totalPages = Math.ceil(nfts.length / NFTsPerPage);
+  const totalPages = Math.ceil(Number(nftCount) / NFTsPerPage);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -126,7 +117,7 @@ const Page: React.FC = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-            {currentNFTs.map((nft, index) => (
+            {nfts.map((nft, index) => (
               <NFTCard
                 key={index}
                 imageUrl={nft.imageUrl}

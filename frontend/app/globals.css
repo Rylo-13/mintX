@@ -18,7 +18,7 @@ body {
 
 @media (min-width: 600px) {
   body {
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
@@ -42,13 +42,13 @@ body {
   }
 
   .btn-prim {
-    @apply bg-[#D600C4] rounded text-white font-normal px-10 py-2 hover:bg-[#FF10F0] focus:outline-none;
+    @apply bg-[#D600C4] rounded text-white font-normal px-12 py-2 hover:bg-[#FF10F0] focus:outline-none;
   }
   /* .btn-inactive {
     @apply bg-[#86007d] rounded-md text-white font-normal px-10 py-2 hover:bg-[#E00EDE] focus:outline-none;
   } */
   .btn-inactive {
-    @apply rounded-md text-gray-500 font-normal px-10 py-2 focus:outline-none;
+    @apply rounded-md text-gray-500 font-normal px-12 py-2 focus:outline-none;
   }
   .border {
     @apply border-[0.1px] border-gray-500 rounded;

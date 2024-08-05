@@ -7,7 +7,7 @@ export default function XIcon(props: SVGProps<SVGSVGElement>) {
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => setIsHovered(false);
 
-  const strokeColor = isHovered ? "#a81010" : "#787878";
+  const strokeColor = isHovered ? "#a81010" : "#ffffff";
 
   return (
     <svg

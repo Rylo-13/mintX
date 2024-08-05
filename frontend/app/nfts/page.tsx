@@ -19,7 +19,7 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { address } = useAccount();
   const publicClient = usePublicClient();
-  const NFTsPerPage = 12;
+  const NFTsPerPage = 8;
 
   const contractAddress = "0xe5ac9aB13f517A3c6e717c6533137B62c98f35BB";
   const abi = contractABI.abi;

@@ -10,7 +10,7 @@ export default function GenerateButton(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 24 24"
       {...props}
     >
-      <g transform="rotate(-90 12 12) translate(24 0) scale(-1 1)">
+      <g transform="translate(24 0) scale(-1 1)">
         <g
           fill="none"
           stroke="currentColor"

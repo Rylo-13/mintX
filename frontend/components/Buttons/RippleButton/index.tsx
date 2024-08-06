@@ -61,7 +61,7 @@ const RippleButton: React.FC<RippleButtonProps> = ({
         ref={buttonRef}
         className={`relative rounded-sm px-5 min-w-max overflow-hidden hover:bg-opacity-90 focus:outline-none ${className} ${
           active ? "btn-prim shadow" : "btn-inactive"
-        }`}
+        } ${disabled ? "disabled hover:bg-none" : ""}`}
         onMouseMove={handleMouseMove}
         onMouseEnter={rippleEffect}
         onMouseLeave={() => {

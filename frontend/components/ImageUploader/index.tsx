@@ -16,6 +16,7 @@ import GenerateButton from "../Icons/GenerateButton";
 const ImageUploader: React.FC = () => {
   const { isConnected } = useAccount();
   const [selectedImage, setSelectedImage] = useState<File | null>(null); // Holds the selected image file for upload or generation
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Stores the URL of the uploaded image
   const [generatedImageUrl, setIsGeneratedImageUrl] = useState<string | null>(
     null
   ); // Stores the URL of the generated AI image
@@ -24,14 +25,14 @@ const ImageUploader: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false); // Tracks whether the AI image generation process is ongoing
   const [errors, setErrors] = useState(""); // Stores any errors that occur during image upload or interaction with the contract
   const [isCompleted, setIsCompleted] = useState(false); // Indicates if the NFT minting process is completed
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Stores the URL of the uploaded image
   const [mintedNFTDetails, setMintedNFTDetails] = useState<any>(null); // Stores details of the minted NFT after successful mint
-  const [isGenerated, setIsGenerated] = useState(false); // Tracks if an AI image has been generated
+  const [isGeneratedTab, setIsGeneratedTab] = useState(false); // Tracks if an AI image has been generated
   const [nftName, setNftName] = useState(""); // Stores the name of the NFT
   const [nftDescription, setNFTDescription] = useState(""); // Stores the description of the NFT
   const [attributes, setAttributes] = useState<
     { key: string; value: string }[]
   >([{ key: "", value: "" }]); // Stores attributes (key-value pairs) associated with the NFT
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const contractAddress = "0xe5ac9aB13f517A3c6e717c6533137B62c98f35BB";
   const abi = contractABI.abi;
@@ -86,7 +87,7 @@ const ImageUploader: React.FC = () => {
     setErrors("");
     setIsMinting(false);
     setIsGenerating(false);
-    setIsGenerated(false);
+    setIsGeneratedTab(false);
     setUploadedImageUrl(null);
     setMintedNFTDetails(null);
     setNftName("");
@@ -234,18 +235,18 @@ const ImageUploader: React.FC = () => {
             <RippleButton
               className="flex-1 w-full"
               text="Upload Image"
-              onClick={() => setIsGenerated(false)}
-              active={!isGenerated}
+              onClick={() => setIsGeneratedTab(false)}
+              active={!isGeneratedTab}
             />
             <RippleButton
               className="flex-1 w-full"
               text="Create Image"
-              onClick={() => setIsGenerated(true)}
-              active={isGenerated}
+              onClick={() => setIsGeneratedTab(true)}
+              active={isGeneratedTab}
             />
           </div>
 
-          {!isGenerated && (
+          {!isGeneratedTab && (
             <div className="mb-5">
               <div className="relative flex justify-center cursor-pointer">
                 <input
@@ -273,11 +274,11 @@ const ImageUploader: React.FC = () => {
                         <img
                           src={uploadedImageUrl!}
                           alt="Uploaded Image"
-                          className="rounded shadow-md shadow-[#989898]"
+                          className="rounded shadow-md shadow-[#373737]"
                           style={{ maxWidth: "100%", height: "auto" }}
                         />
                         <XIcon
-                          className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#919191] m-1 rounded"
+                          className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#8e8e8e] m-1 rounded"
                           onClick={handleClearImage}
                           style={{
                             position: "absolute",
@@ -291,11 +292,10 @@ const ImageUploader: React.FC = () => {
                   </div>
                 )}
               </div>
-              {errors && <p className="text-red-500 text-sm mt-2">{errors}</p>}
             </div>
           )}
 
-          {isGenerated && (
+          {isGeneratedTab && (
             <div className="mb-5">
               <div className="relative w-full">
                 {!generatedImageUrl && (
@@ -333,7 +333,7 @@ const ImageUploader: React.FC = () => {
                             <GenerateButton className="w-10 h-10" />
                           </div>
                         </div>
-                        <div className="w-3/5 flex flex-col items-center justify-center mt-2 p-10 border border-dashed rounded-lg text-center text-gray-400">
+                        <div className="w-3/5 flex flex-col items-center justify-center my-6 p-10 border border-dashed rounded-lg text-center text-gray-400">
                           <UploadIcon className="w-12 h-12 mb-2" />
                           <p className="mb-2">
                             Enter an AI description and generate an image!
@@ -356,11 +356,12 @@ const ImageUploader: React.FC = () => {
                       <img
                         src={generatedImageUrl}
                         alt="Generated Image"
-                        className="rounded shadow-md shadow-[#989898]"
+                        className="rounded shadow-md shadow-[#373737]"
                         style={{ maxWidth: "100%", height: "auto" }}
+                        onLoad={() => setImageLoaded(true)}
                       />
                       <XIcon
-                        className="h-6 w-6 cursor-pointer bg-[#ffffff67] m-1 rounded"
+                        className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#8e8e8e] m-1 rounded"
                         onClick={handleClearImage}
                         style={{
                           position: "absolute",
@@ -418,7 +419,7 @@ const ImageUploader: React.FC = () => {
                   />
                   {index > 0 && (
                     <XIcon
-                      className="h-8 w-8 cursor-pointer absolute top-0 right-0.5 mt-0.5 lg:mt-1"
+                      className="h-8 w-8 cursor-pointer absolute top-0 right-0.5 mt-0.5 lg:mt-1 text-white hover:text-[#a81010]"
                       onClick={() => handleDeleteAttribute(index)}
                     />
                   )}
@@ -438,9 +439,17 @@ const ImageUploader: React.FC = () => {
             className="w-full"
             text={isMinting ? "Confirming..." : "Mint NFT"}
             onClick={handleMintNFT}
+            disabled={
+              isMinting ||
+              (!selectedImage && !generatedImageUrl) ||
+              (isGeneratedTab && !imageLoaded) ||
+              !nftName ||
+              !nftDescription
+            }
             active
           />
-          {errors && <p className="text-red-500 mt-4">{errors}</p>}
+
+          {errors && <p className="text-red-500 text-sm mt-2">{errors}</p>}
         </div>
       )}
 

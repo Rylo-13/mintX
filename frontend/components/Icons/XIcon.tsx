@@ -1,27 +1,17 @@
-import React, { useState } from "react";
 import type { SVGProps } from "react";
 
 export default function XIcon(props: SVGProps<SVGSVGElement>) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseEnter = () => setIsHovered(true);
-  const handleMouseLeave = () => setIsHovered(false);
-
-  const strokeColor = isHovered ? "#a81010" : "#ffffff";
-
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       viewBox="0 0 24 24"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       {...props}
     >
       <g
         fill="none"
-        stroke={strokeColor}
+        stroke="currentColor"
         strokeDasharray={16}
         strokeDashoffset={16}
         strokeLinecap="round"

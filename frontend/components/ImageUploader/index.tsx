@@ -15,26 +15,26 @@ import GenerateButton from "../Icons/GenerateButton";
 
 const ImageUploader: React.FC = () => {
   const { isConnected } = useAccount();
-  const [selectedImage, setSelectedImage] = useState<File | null>(null); // Holds the selected image file for upload or generation
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Stores the URL of the uploaded image
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [generatedImageUrl, setIsGeneratedImageUrl] = useState<string | null>(
     null
-  ); // Stores the URL of the generated AI image
-  const [aiImageDescription, setAiImageDescription] = useState(""); // Stores the description for generating AI image
-  const [isMinting, setIsMinting] = useState(false); // Tracks whether the NFT minting process is ongoing
-  const [isGenerating, setIsGenerating] = useState(false); // Tracks whether the AI image generation process is ongoing
-  const [errors, setErrors] = useState(""); // Stores any errors that occur during image upload or interaction with the contract
-  const [isCompleted, setIsCompleted] = useState(false); // Indicates if the NFT minting process is completed
-  const [mintedNFTDetails, setMintedNFTDetails] = useState<any>(null); // Stores details of the minted NFT after successful mint
-  const [isGeneratedTab, setIsGeneratedTab] = useState(false); // Tracks if an AI image has been generated
-  const [nftName, setNftName] = useState(""); // Stores the name of the NFT
-  const [nftDescription, setNFTDescription] = useState(""); // Stores the description of the NFT
+  );
+  const [aiImageDescription, setAiImageDescription] = useState("");
+  const [isMinting, setIsMinting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [errors, setErrors] = useState("");
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [mintedNFTDetails, setMintedNFTDetails] = useState<any>(null);
+  const [isGeneratedTab, setIsGeneratedTab] = useState(false);
+  const [nftName, setNftName] = useState("");
+  const [nftDescription, setNFTDescription] = useState("");
   const [attributes, setAttributes] = useState<
     { key: string; value: string }[]
-  >([{ key: "", value: "" }]); // Stores attributes (key-value pairs) associated with the NFT
+  >([{ key: "", value: "" }]);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const contractAddress = "0xe5ac9aB13f517A3c6e717c6533137B62c98f35BB";
+  const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;
   const abi = contractABI.abi;
   const config = useConfig();
 
@@ -163,7 +163,7 @@ const ImageUploader: React.FC = () => {
       // Mint NFT
       const transactionHash = await writeContractAsync({
         abi,
-        address: contractAddress,
+        address: mintCA,
         functionName: "mintNFT",
         args: [metadataURI],
       });
@@ -178,12 +178,16 @@ const ImageUploader: React.FC = () => {
         throw new Error("Transaction failed");
       }
 
+      // Extract the token ID from the transaction receipt logs
+      const tokenId = receipt.logs[0].topics[3];
+
       setMintedNFTDetails({
         nftName,
         nftDescription,
         image: imageURI,
         attributes,
         transactionHash,
+        tokenId,
       });
 
       setIsCompleted(true);
@@ -248,7 +252,7 @@ const ImageUploader: React.FC = () => {
 
           {!isGeneratedTab && (
             <div className="mb-5">
-              <div className="relative flex justify-center cursor-pointer">
+              <div className="relative flex justify-center">
                 <input
                   type="file"
                   accept="image/*"
@@ -464,6 +468,8 @@ const ImageUploader: React.FC = () => {
             nftDescription={mintedNFTDetails.nftDescription}
             attributes={mintedNFTDetails.attributes}
             transactionHash={mintedNFTDetails.transactionHash}
+            mintCA={mintCA}
+            tokenId={mintedNFTDetails.tokenId}
           />
           <div className="flex justify-center mt-10">
             <RippleButton

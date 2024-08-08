@@ -4,15 +4,14 @@ const OpenSeaIcon = () => (
   <div
     style={{
       position: "absolute",
-      top: "15px",
+      bottom: "15px",
       right: "15px",
-      pointerEvents: "auto", // Ensure OpenSea icon is clickable
+      pointerEvents: "auto",
     }}
-    onClick={() => window.open("https://opensea.io", "_blank")}
   >
     <svg
-      width="30" // Adjusted size to make the icon smaller
-      height="30" // Adjusted size to make the icon smaller
+      width="30"
+      height="30"
       viewBox="0 0 360 360"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

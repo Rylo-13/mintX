@@ -5,6 +5,7 @@ import { toPng } from "html-to-image";
 import { motion } from "framer-motion";
 import styles from "./index.module.css";
 import axios from "axios";
+import { RingLoader } from "react-spinners";
 import OpenSeaIcon from "../Icons/OpenseaIcon";
 
 interface NFTCardProps {
@@ -13,6 +14,8 @@ interface NFTCardProps {
   nftDescription: string;
   attributes: { key: string; value: string }[];
   transactionHash: string;
+  mintCA: string;
+  tokenId: string;
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({
@@ -21,6 +24,8 @@ const NFTCard: React.FC<NFTCardProps> = ({
   nftDescription,
   attributes,
   transactionHash,
+  mintCA,
+  tokenId,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -31,6 +36,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   const frontRef = useRef<HTMLDivElement>(null);
   const startPos = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
+  const decimalTokenId = BigInt(tokenId).toString(10);
 
   useEffect(() => {
     if (qrCodeUrl) return;
@@ -88,6 +94,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
           await uploadImageToPinata(dataUrl);
         } catch (error) {
           console.error("Error generating screenshot:", error);
+        } finally {
         }
       }
     };
@@ -230,7 +237,6 @@ const NFTCard: React.FC<NFTCardProps> = ({
           className={`${styles.cardSide} ${styles.cardFront}`}
           ref={frontRef}
         >
-          {/* <OpenSeaIcon /> */}
           <h3 className={styles.title}>{nftName}</h3>
           <img src={imageUrl} alt={nftName} className={styles.image} />
           <p className={styles.description}>{nftDescription}</p>
@@ -245,10 +251,28 @@ const NFTCard: React.FC<NFTCardProps> = ({
 
         {/* Back Side */}
         <div className={`${styles.cardSide} ${styles.cardBack}`}>
-          {qrCodeUrl && <QRCode value={qrCodeUrl} size={200} />}
-          <p className={styles.transactionHash}>
-            TX: {transactionHash.slice(0, 10)}...
-          </p>
+          {qrCodeUrl ? (
+            <QRCode value={qrCodeUrl} size={200} />
+          ) : (
+            <RingLoader color="#fff" size={100} />
+          )}
+          {transactionHash ? (
+            <p className={styles.transactionHash}>
+              TX: {transactionHash.slice(0, 10)}...
+            </p>
+          ) : (
+            ""
+          )}
+          <>
+            <a
+              href={`https://testnets.opensea.io/assets/sepolia/${mintCA}/${decimalTokenId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-10 h-10"
+            >
+              <OpenSeaIcon />
+            </a>
+          </>
         </div>
       </motion.div>
     </div>

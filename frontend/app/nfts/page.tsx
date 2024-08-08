@@ -21,6 +21,7 @@ const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const NFTsPerPage = 8;
+  //
 
   const publicClient = usePublicClient();
   const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;

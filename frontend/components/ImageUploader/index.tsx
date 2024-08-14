@@ -12,6 +12,7 @@ import XIcon from "../Icons/XIcon";
 import UploadIcon from "../Icons/UploadIcon";
 import { RingLoader } from "react-spinners";
 import GenerateButton from "../Icons/GenerateButton";
+import AttributesModal from "../AttributesModal";
 
 const ImageUploader: React.FC = () => {
   const { isConnected } = useAccount();
@@ -33,8 +34,11 @@ const ImageUploader: React.FC = () => {
     { key: string; value: string }[]
   >([{ key: "", value: "" }]);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;
+  // const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;
+  const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
+  const arbitrumCA = process.env.ARBITRUM_CA! as `0x${string}`;
   const abi = contractABI.abi;
   const config = useConfig();
 
@@ -163,7 +167,7 @@ const ImageUploader: React.FC = () => {
       // Mint NFT
       const transactionHash = await writeContractAsync({
         abi,
-        address: mintCA,
+        address: sepoliaCA,
         functionName: "mintNFT",
         args: [metadataURI],
       });
@@ -303,10 +307,10 @@ const ImageUploader: React.FC = () => {
             <div className="mb-5">
               <div className="relative w-full">
                 {!generatedImageUrl && (
-                  <div className="flex flex-col items-center justify-center">
+                  <div className="flex flex-col items-center justify-center h-[320px]">
                     {isGenerating ? (
                       <div className="flex justify-center items-center w-full h-full">
-                        <RingLoader color="#fff" size={100} />
+                        <RingLoader color="#fff" size={150} />
                       </div>
                     ) : (
                       <>
@@ -439,6 +443,21 @@ const ImageUploader: React.FC = () => {
             </div>
           </div>
 
+          {/* <div className="mb-4">
+            <AttributesModal
+              attributes={attributes}
+              setAttributes={setAttributes}
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
+          </div>
+          <div className="flex justify-center mb-5">
+            <RippleButton
+              text="Add Attributes"
+              onClick={() => setIsModalOpen(true)}
+            />
+          </div> */}
+
           <RippleButton
             className="w-full"
             text={isMinting ? "Confirming..." : "Mint NFT"}
@@ -468,7 +487,7 @@ const ImageUploader: React.FC = () => {
             nftDescription={mintedNFTDetails.nftDescription}
             attributes={mintedNFTDetails.attributes}
             transactionHash={mintedNFTDetails.transactionHash}
-            mintCA={mintCA}
+            sepoliaCA={sepoliaCA}
             tokenId={mintedNFTDetails.tokenId}
           />
           <div className="flex justify-center mt-10">

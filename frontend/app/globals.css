@@ -41,6 +41,9 @@ body {
   .btn-prim {
     @apply bg-[#D600C4] rounded text-white font-normal px-12 py-2 hover:bg-[#FF10F0] focus:outline-none;
   }
+  /* .btn-prjhgjjim {
+    @apply bg-[#00d6cf] rounded text-white font-normal px-12 py-2 hover:bg-[#FF10F0] focus:outline-none;
+  } */
   .btn-inactive {
     @apply rounded-md text-gray-500 font-normal px-12 py-2 focus:outline-none;
   }

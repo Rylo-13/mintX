@@ -38,7 +38,13 @@
 }
 
 .cardBack {
-  background: linear-gradient(135deg, #1f1f1f, #242424);
+  background: linear-gradient(
+    135deg,
+    #1a1a1a,
+    #434343 50%,
+    #888888 60%,
+    #ffffff 100%
+  );
   color: white;
   transform: rotateY(180deg);
   display: flex;

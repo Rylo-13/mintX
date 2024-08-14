@@ -41,9 +41,6 @@
   width: 250px;
   height: 210px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #2d2d2d 25%, #1f1f1f 50%, #2d2d2d 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
   margin-bottom: 2px;
   margin-left: auto;
   margin-right: auto;
@@ -52,18 +49,12 @@
 .skeletonTitle {
   height: 24px;
   width: 120px;
-  background: linear-gradient(90deg, #2d2d2d 25%, #1f1f1f 50%, #2d2d2d 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
   margin-bottom: 8px;
 }
 
 .skeletonDescription {
   height: 60px;
   width: 100%;
-  background: linear-gradient(90deg, #2d2d2d 25%, #1f1f1f 50%, #2d2d2d 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
   margin-bottom: 10px;
 }
 
@@ -76,16 +67,22 @@
 .skeletonAttribute {
   height: 16px;
   width: 80px;
+}
+
+.skeletonImage,
+.skeletonTitle,
+.skeletonDescription,
+.skeletonAttribute {
   background: linear-gradient(90deg, #2d2d2d 25%, #1f1f1f 50%, #2d2d2d 75%);
   background-size: 200% 100%;
-  animation: loading 1.5s infinite;
+  animation: loading 2.2s ease-in-out infinite;
 }
 
 @keyframes loading {
   0% {
-    background-position: 0 0;
+    background-position: 400% 0;
   }
   100% {
-    background-position: 100% 0;
+    background-position: -200% 0;
   }
 }

@@ -21,40 +21,45 @@ const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const NFTsPerPage = 8;
-  //
 
   const publicClient = usePublicClient();
-  const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;
+  const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
   const abi = contractABI.abi;
 
   const { data: nftCount } = useReadContract({
-    address: mintCA,
+    address: sepoliaCA,
     abi: abi,
     functionName: "balanceOf",
     args: [address],
   });
 
   const fetchNFTs = useCallback(async () => {
-    if (!address || !publicClient || !nftCount || isFetchingMore) {
+    if (!address || !publicClient || nftCount === undefined || isFetchingMore) {
       return;
     }
 
     try {
       setIsFetchingMore(true);
+
+      if (Number(nftCount) === 0) {
+        setLoading(false);
+        return;
+      }
+
       const fetchedNFTs: NFT[] = [];
       const start = (currentPage - 1) * NFTsPerPage;
       const end = Math.min(start + NFTsPerPage, Number(nftCount));
 
       for (let i = start; i < end; i++) {
         const tokenId = (await publicClient.readContract({
-          address: mintCA,
+          address: sepoliaCA,
           abi: abi,
           functionName: "tokenOfOwnerByIndex",
           args: [address, BigInt(i)],
         })) as bigint;
 
         const tokenURI = (await publicClient.readContract({
-          address: mintCA,
+          address: sepoliaCA,
           abi: abi,
           functionName: "tokenURI",
           args: [tokenId],
@@ -120,32 +125,30 @@ const Page: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 mb-10">
-      <h1 className="text-4xl font-bold text-center mt-8 mb-14 text-white">
-        Your NFTs
-      </h1>
-      {nfts.length === 0 && !loading ? (
+      <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 h-28 flex items-center justify-center mb-10">
+        <h1 className="text-5xl font-bold text-white">Your NFT Collection</h1>
+      </div>
+      {!loading && nfts.length === 0 ? (
         <p className="text-center text-white">No NFTs found.</p>
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-            {nfts.map((nft) => (
-              <NFTCard
-                key={nft.tokenId}
-                imageUrl={nft.imageUrl}
-                nftName={nft.nftName}
-                nftDescription={nft.nftDescription}
-                attributes={nft.attributes}
-                transactionHash={nft.transactionHash}
-                mintCA={mintCA}
-                tokenId={nft.tokenId}
-              />
-            ))}
-            {loading &&
-              Array.from({ length: NFTsPerPage }).map((_, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+          {loading
+            ? Array.from({ length: NFTsPerPage }).map((_, index) => (
                 <SkeletonCard key={index} />
+              ))
+            : nfts.map((nft) => (
+                <NFTCard
+                  key={nft.tokenId}
+                  imageUrl={nft.imageUrl}
+                  nftName={nft.nftName}
+                  nftDescription={nft.nftDescription}
+                  attributes={nft.attributes}
+                  transactionHash={nft.transactionHash}
+                  sepoliaCA={sepoliaCA}
+                  tokenId={nft.tokenId}
+                />
               ))}
-          </div>
-        </>
+        </div>
       )}
     </div>
   );

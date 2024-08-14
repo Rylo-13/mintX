@@ -14,7 +14,9 @@ interface NFTCardProps {
   nftDescription: string;
   attributes: { key: string; value: string }[];
   transactionHash: string;
-  mintCA: string;
+  // mintCA: string;
+  sepoliaCA: string;
+  // arbitrumCA: string;
   tokenId: string;
 }
 
@@ -24,7 +26,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   nftDescription,
   attributes,
   transactionHash,
-  mintCA,
+  sepoliaCA,
   tokenId,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -254,7 +256,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
           {qrCodeUrl ? (
             <QRCode value={qrCodeUrl} size={200} />
           ) : (
-            <RingLoader color="#fff" size={100} />
+            <RingLoader color="#ffffff" size={130} />
           )}
           {transactionHash ? (
             <p className={styles.transactionHash}>
@@ -262,10 +264,15 @@ const NFTCard: React.FC<NFTCardProps> = ({
             </p>
           ) : (
             ""
+            // <div className="w-2/3 mt-1">
+            //   <p className="text-white text-xs bg-black ">
+            //     0x25r6tEE86Hfjp99iut777t6665r5vkpo
+            //   </p>
+            // </div>
           )}
           <>
             <a
-              href={`https://testnets.opensea.io/assets/sepolia/${mintCA}/${decimalTokenId}`}
+              href={`https://testnets.opensea.io/assets/sepolia/${sepoliaCA}/${decimalTokenId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-10 h-10"

@@ -9,6 +9,8 @@ export async function POST(req: NextRequest) {
       prompt: aiImageDescription,
       n: 1,
       size: "256x256",
+      // size: "512x512",
+      // size: "1024x1024",
     };
 
     const headers = {

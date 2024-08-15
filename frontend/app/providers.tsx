@@ -23,8 +23,9 @@ export function Providers({ children, initialState }: Props) {
           coolMode
           showRecentTransactions={true}
           initialChain={sepolia}
+          modalSize="compact"
           theme={darkTheme({
-            accentColor: "#FF10F0",
+            accentColor: "#D600C4",
             accentColorForeground: "white",
             borderRadius: "medium",
             overlayBlur: "small",

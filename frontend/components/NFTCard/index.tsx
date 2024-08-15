@@ -31,7 +31,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
-  const [cursorStyle, setCursorStyle] = useState("pointer");
+  const [cursorStyle, setCursorStyle] = useState("grabbing");
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const initialRotation = { x: 0, y: 0, z: 0 };
   const cardRef = useRef<HTMLDivElement>(null);
@@ -39,7 +39,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   const startPos = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const decimalTokenId = BigInt(tokenId).toString(10);
-
+  //
   useEffect(() => {
     if (qrCodeUrl) return;
 
@@ -240,7 +240,12 @@ const NFTCard: React.FC<NFTCardProps> = ({
           ref={frontRef}
         >
           <h3 className={styles.title}>{nftName}</h3>
-          <img src={imageUrl} alt={nftName} className={styles.image} />
+          <img
+            src={imageUrl}
+            alt={nftName}
+            className={styles.image}
+            fetchPriority="high"
+          />
           <p className={styles.description}>{nftDescription}</p>
           <div className={styles.attributes}>
             {attributes.map((attr, index) => (
@@ -275,7 +280,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
               href={`https://testnets.opensea.io/assets/sepolia/${sepoliaCA}/${decimalTokenId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10"
+              className="inline-flex items-center justify-center w-10 h-10 cursor-pointer"
             >
               <OpenSeaIcon />
             </a>

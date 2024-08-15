@@ -14,8 +14,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "My Dapp",
-  description: "Itza Dapp",
+  title: "MintX",
+  description: "NFT mint and bridge dapp",
 };
 
 export default function RootLayout({

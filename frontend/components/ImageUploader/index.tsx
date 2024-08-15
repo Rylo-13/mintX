@@ -34,11 +34,11 @@ const ImageUploader: React.FC = () => {
     { key: string; value: string }[]
   >([{ key: "", value: "" }]);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
 
   // const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;
   const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
-  const arbitrumCA = process.env.ARBITRUM_CA! as `0x${string}`;
+  // const arbitrumCA = process.env.ARBITRUM_CA! as `0x${string}`;
   const abi = contractABI.abi;
   const config = useConfig();
 
@@ -98,6 +98,7 @@ const ImageUploader: React.FC = () => {
     setNFTDescription("");
     setAttributes([{ key: "", value: "" }]);
     setIsCompleted(false);
+    setImageLoaded(false);
   };
 
   const handleMintNFT = async () => {
@@ -147,12 +148,16 @@ const ImageUploader: React.FC = () => {
 
       setUploadedImageUrl(imageURI);
 
+      const filteredAttributes = attributes.filter(
+        (attr) => attr.key.trim() !== "" && attr.value.trim() !== ""
+      );
+
       // Prepare metadata
       const metadata = {
         name: nftName,
         description: nftDescription,
         image: imageURI,
-        attributes,
+        attributes: filteredAttributes.length > 0 ? filteredAttributes : [],
       };
 
       // Pin metadata to IPFS using custom API route
@@ -189,7 +194,7 @@ const ImageUploader: React.FC = () => {
         nftName,
         nftDescription,
         image: imageURI,
-        attributes,
+        attributes: filteredAttributes,
         transactionHash,
         tokenId,
       });
@@ -210,6 +215,7 @@ const ImageUploader: React.FC = () => {
     if (!aiImageDescription) return;
 
     setIsGenerating(true);
+    setImageLoaded(false);
 
     try {
       const response = await axios.post(
@@ -264,7 +270,7 @@ const ImageUploader: React.FC = () => {
                   onChange={handleFileInputChange}
                 />
                 {!selectedImage && (
-                  <div className="w-3/5 my-6 flex flex-col items-center justify-center p-10 border border-dashed rounded-lg text-center text-gray-400">
+                  <div className="w-full md:w-3/5 my-6 flex flex-col items-center justify-center p-10 border border-dashed rounded-lg text-center text-gray-400">
                     <UploadIcon className="w-12 h-12 mb-2" />
                     <p className="mb-2">Click to upload an image</p>
                     <p>or drag and drop here</p>
@@ -284,6 +290,7 @@ const ImageUploader: React.FC = () => {
                           alt="Uploaded Image"
                           className="rounded shadow-md shadow-[#373737]"
                           style={{ maxWidth: "100%", height: "auto" }}
+                          fetchPriority="high"
                         />
                         <XIcon
                           className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#8e8e8e] m-1 rounded"
@@ -307,14 +314,14 @@ const ImageUploader: React.FC = () => {
             <div className="mb-5">
               <div className="relative w-full">
                 {!generatedImageUrl && (
-                  <div className="flex flex-col items-center justify-center h-[320px]">
+                  <div className="flex flex-col items-center justify-center h-[280px] md:h-[320px]">
                     {isGenerating ? (
-                      <div className="flex justify-center items-center w-full h-full">
+                      <div className="flex justify-center items-center w-full h-full mb-1">
                         <RingLoader color="#fff" size={150} />
                       </div>
                     ) : (
                       <>
-                        <div className="relative w-full mb-4">
+                        <div className="relative w-full mt-2 md:mt-0 mb-4">
                           <input
                             className="w-full px-3 py-1.5 border pr-24"
                             type="text"
@@ -341,7 +348,7 @@ const ImageUploader: React.FC = () => {
                             <GenerateButton className="w-10 h-10" />
                           </div>
                         </div>
-                        <div className="w-3/5 flex flex-col items-center justify-center my-6 p-10 border border-dashed rounded-lg text-center text-gray-400">
+                        <div className="w-full md:w-3/5 flex flex-col items-center justify-center my-6 p-10 border border-dashed rounded-lg text-center text-gray-400">
                           <UploadIcon className="w-12 h-12 mb-2" />
                           <p className="mb-2">
                             Enter an AI description and generate an image!
@@ -367,17 +374,20 @@ const ImageUploader: React.FC = () => {
                         className="rounded shadow-md shadow-[#373737]"
                         style={{ maxWidth: "100%", height: "auto" }}
                         onLoad={() => setImageLoaded(true)}
+                        fetchPriority="high"
                       />
-                      <XIcon
-                        className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#8e8e8e] m-1 rounded"
-                        onClick={handleClearImage}
-                        style={{
-                          position: "absolute",
-                          top: 15,
-                          right: 15,
-                          transform: "translate(50%, -50%)",
-                        }}
-                      />
+                      {imageLoaded && (
+                        <XIcon
+                          className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#8e8e8e] m-1 rounded"
+                          onClick={handleClearImage}
+                          style={{
+                            position: "absolute",
+                            top: 15,
+                            right: 15,
+                            transform: "translate(50%, -50%)",
+                          }}
+                        />
+                      )}
                     </div>
                   </motion.div>
                 </div>
@@ -392,6 +402,7 @@ const ImageUploader: React.FC = () => {
               placeholder="Name"
               value={nftName}
               onChange={(e) => setNftName(e.target.value)}
+              maxLength={20}
             />
             <textarea
               className="w-full px-3 py-1.5 border"
@@ -399,6 +410,7 @@ const ImageUploader: React.FC = () => {
               value={nftDescription}
               onChange={(e) => setNFTDescription(e.target.value)}
               style={{ resize: "none" }}
+              maxLength={130}
             />
           </div>
 
@@ -415,6 +427,7 @@ const ImageUploader: React.FC = () => {
                     onChange={(e) =>
                       handleAttributeChange(index, "key", e.target.value)
                     }
+                    maxLength={12}
                   />
                   <input
                     className="w-1/2 px-3 py-1.5 border"
@@ -424,6 +437,7 @@ const ImageUploader: React.FC = () => {
                     onChange={(e) =>
                       handleAttributeChange(index, "value", e.target.value)
                     }
+                    maxLength={12}
                   />
                   {index > 0 && (
                     <XIcon
@@ -478,7 +492,7 @@ const ImageUploader: React.FC = () => {
 
       {isCompleted && mintedNFTDetails && (
         <>
-          <h2 className="flex justify-center mt-16 mb-10 text-3xl font-semibold text-white">
+          <h2 className="flex justify-center mt-6 mb-12 text-4xl font-semibold text-white">
             NFT Minted Successfully!
           </h2>
           <NFTCard
@@ -490,7 +504,7 @@ const ImageUploader: React.FC = () => {
             sepoliaCA={sepoliaCA}
             tokenId={mintedNFTDetails.tokenId}
           />
-          <div className="flex justify-center mt-10">
+          <div className="flex justify-center mt-14">
             <RippleButton
               text="Mint Another NFT"
               onClick={resetFields}

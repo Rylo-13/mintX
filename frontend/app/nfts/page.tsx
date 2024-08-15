@@ -121,8 +121,8 @@ const Page: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 mb-10">
-      <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 h-28 flex items-center justify-center mb-10">
-        <h1 className="text-5xl font-bold text-white">Your NFT Collection</h1>
+      <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 h-28 flex items-center justify-center mb-10 mx-2">
+        <h1 className="text-5xl font-bold text-white">Your NFT Gallery</h1>
       </div>
       {!loadingInitial && nfts.length === 0 ? (
         <p className="text-center text-white">No NFTs found.</p>

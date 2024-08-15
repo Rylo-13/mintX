@@ -65,7 +65,7 @@ const Navbar = () => {
                   href="/nfts"
                   className="cursor-pointer hover:text-[#FF10F0]"
                 >
-                  NFTS
+                  GALLERY
                 </Link>
               </li>
             </ul>

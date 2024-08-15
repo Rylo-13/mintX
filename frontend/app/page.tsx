@@ -23,8 +23,8 @@ const Home: React.FC = () => {
         priority
         className="object-cover z-0 opacity-90"
       />
-      <div className="z-10 w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto text-center bg-black bg-opacity-85 mb-16 py-8 sm:py-12 md:py-16 px-8 sm:px-12 md:px-16 rounded-lg">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 md:mb-10 text-[#FF10F0]">
+      <div className="z-10 w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto text-center bg-black bg-opacity-80 mb-16 py-8 sm:py-12 md:py-16 px-8 sm:px-12 md:px-16 rounded-lg">
+        <h1 className="text-5xl font-bold mb-6 sm:mb-8 md:mb-10 text-[#FF10F0]">
           Welcome To MintX
         </h1>
         <p className="text-base sm:text-lg md:text-xl my-6 sm:my-8 md:my-10 px-8 sm:px-6 md:px-10 font-light justify-evenly text-center text-white">

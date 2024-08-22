@@ -1,12 +1,13 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import QRCode from "qrcode.react"; // Default import
+import QRCode from "qrcode.react";
 import { toPng } from "html-to-image";
 import { motion } from "framer-motion";
 import styles from "./index.module.css";
 import axios from "axios";
 import { RingLoader } from "react-spinners";
 import OpenSeaIcon from "../Icons/OpenseaIcon";
+import Image from "next/image";
 
 interface NFTCardProps {
   imageUrl: string;
@@ -14,9 +15,7 @@ interface NFTCardProps {
   nftDescription: string;
   attributes: { key: string; value: string }[];
   transactionHash: string;
-  // mintCA: string;
-  sepoliaCA: string;
-  // arbitrumCA: string;
+  contractAddress: string;
   tokenId: string;
 }
 
@@ -26,7 +25,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   nftDescription,
   attributes,
   transactionHash,
-  sepoliaCA,
+  contractAddress,
   tokenId,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -38,20 +37,20 @@ const NFTCard: React.FC<NFTCardProps> = ({
   const frontRef = useRef<HTMLDivElement>(null);
   const startPos = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
-  const decimalTokenId = BigInt(tokenId).toString(10);
-  //
-  useEffect(() => {
-    if (qrCodeUrl) return;
+  const decimalTokenId = tokenId ? BigInt(tokenId).toString(10) : "";
 
-    const uploadImageToPinata = async (imageUrl: string) => {
+  const uploadImageToPinata = useRef(false);
+
+  useEffect(() => {
+    if (qrCodeUrl || uploadImageToPinata.current) return;
+
+    const uploadImage = async (imageUrl: string) => {
       const formData = new FormData();
 
       try {
-        // Fetch the image using axios
         const response = await axios.get(imageUrl, { responseType: "blob" });
         const blob = response.data;
 
-        // Append the image blob to FormData
         formData.append("file", blob, "nft_card_screenshot.png");
 
         const metadata = JSON.stringify({
@@ -68,24 +67,20 @@ const NFTCard: React.FC<NFTCardProps> = ({
         });
         formData.append("pinataOptions", options);
 
-        // Upload the FormData to Pinata
-        try {
-          const pinataResponse = await axios.post(
-            "/api/pinScreenshotToIPFS",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-          const ipfsHash = pinataResponse.data.IpfsHash;
-          setQrCodeUrl(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
-        } catch (error) {
-          console.error("Error uploading to Pinata:", error);
-        }
+        const pinataResponse = await axios.post(
+          "/api/pinScreenshotToIPFS",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        const ipfsHash = pinataResponse.data.IpfsHash;
+        setQrCodeUrl(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
+        uploadImageToPinata.current = true;
       } catch (error) {
-        console.error("Error fetching image from URL:", error);
+        console.error("Error uploading to Pinata:", error);
       }
     };
 
@@ -93,10 +88,9 @@ const NFTCard: React.FC<NFTCardProps> = ({
       if (frontRef.current) {
         try {
           const dataUrl = await toPng(frontRef.current);
-          await uploadImageToPinata(dataUrl);
+          await uploadImage(dataUrl);
         } catch (error) {
           console.error("Error generating screenshot:", error);
-        } finally {
         }
       }
     };
@@ -240,11 +234,13 @@ const NFTCard: React.FC<NFTCardProps> = ({
           ref={frontRef}
         >
           <h3 className={styles.title}>{nftName}</h3>
-          <img
+          <Image
             src={imageUrl}
             alt={nftName}
             className={styles.image}
-            fetchPriority="high"
+            width={256}
+            height={256}
+            priority
           />
           <p className={styles.description}>{nftDescription}</p>
           <div className={styles.attributes}>
@@ -264,20 +260,20 @@ const NFTCard: React.FC<NFTCardProps> = ({
             <RingLoader color="#ffffff" size={130} />
           )}
           {transactionHash ? (
-            <p className={styles.transactionHash}>
-              TX: {transactionHash.slice(0, 10)}...
-            </p>
+            <a
+              href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.transactionHash}
+            >
+              TX: {transactionHash.slice(0, 16)}...
+            </a>
           ) : (
             ""
-            // <div className="w-2/3 mt-1">
-            //   <p className="text-white text-xs bg-black ">
-            //     0x25r6tEE86Hfjp99iut777t6665r5vkpo
-            //   </p>
-            // </div>
           )}
           <>
             <a
-              href={`https://testnets.opensea.io/assets/sepolia/${sepoliaCA}/${decimalTokenId}`}
+              href={`https://testnets.opensea.io/assets/sepolia/${contractAddress}/${decimalTokenId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-10 h-10 cursor-pointer"

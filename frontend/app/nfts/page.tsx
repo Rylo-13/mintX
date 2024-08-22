@@ -13,6 +13,7 @@ type NFT = {
   nftDescription: string;
   attributes: { key: string; value: string }[];
   transactionHash: string;
+  contractAddress: string;
 };
 
 const Page: React.FC = () => {
@@ -109,6 +110,7 @@ const Page: React.FC = () => {
             attributes: metadata.attributes,
             transactionHash: metadata.transactionHash,
             tokenId: tokenId.toString(),
+            contractAddress,
           });
         }
 

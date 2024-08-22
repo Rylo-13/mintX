@@ -22,7 +22,7 @@ export function Providers({ children, initialState }: Props) {
         <RainbowKitProvider
           coolMode
           showRecentTransactions={true}
-          initialChain={sepolia}
+          // initialChain={sepolia}
           modalSize="compact"
           theme={darkTheme({
             accentColor: "#D600C4",

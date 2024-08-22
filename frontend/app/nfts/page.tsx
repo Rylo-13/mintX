@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import NFTCard from "@/components/NFTCard";
 import SkeletonCard from "@/components/NFTSkeleton";
-import { useAccount, useReadContract, usePublicClient } from "wagmi";
-import contractABI from "../../aiArtABI.json";
+import { useAccount, useReadContract, usePublicClient, useConfig } from "wagmi";
+import mintXABIsepolia from "../../mintXsepolia.json";
+import mintXABIfuji from "../../mintXfuji.json";
 
 type NFT = {
   tokenId: string;
@@ -15,7 +16,7 @@ type NFT = {
 };
 
 const Page: React.FC = () => {
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -23,24 +24,51 @@ const Page: React.FC = () => {
   const NFTsPerPage = 8;
 
   const publicClient = usePublicClient();
+
   const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
-  const abi = contractABI.abi;
+  const mxABIsepolia = mintXABIsepolia.abi;
+
+  const fujiCA = process.env.FUJI_CA as `0x${string}`;
+  const mxABIfuji = mintXABIfuji.abi;
+
+  const getContractDetails = () => {
+    if (chain?.id === 11155111) {
+      console.log("Using Sepolia contract");
+      return {
+        address: sepoliaCA,
+        abi: mxABIsepolia,
+      };
+    } else {
+      console.log("Using Fuji contract");
+      return {
+        address: fujiCA,
+        abi: mxABIfuji,
+      };
+    }
+  };
 
   const { data: nftCount } = useReadContract({
-    address: sepoliaCA,
-    abi: abi,
+    address: chain?.id ? getContractDetails().address : undefined,
+    abi: chain?.id ? getContractDetails().abi : undefined,
     functionName: "balanceOf",
     args: [address],
   });
 
   const fetchNFTs = useCallback(
     async (page: number) => {
-      if (!address || !publicClient || nftCount === undefined || loadingMore) {
+      if (
+        !address ||
+        !publicClient ||
+        nftCount === undefined ||
+        loadingMore ||
+        chain?.id === null
+      ) {
         return;
       }
 
       try {
         setLoadingMore(true);
+        const { address: contractAddress, abi } = getContractDetails();
 
         if (Number(nftCount) === 0) {
           setLoadingInitial(false);
@@ -53,15 +81,15 @@ const Page: React.FC = () => {
 
         for (let i = start; i < end; i++) {
           const tokenId = (await publicClient.readContract({
-            address: sepoliaCA,
-            abi: abi,
+            address: contractAddress,
+            abi,
             functionName: "tokenOfOwnerByIndex",
             args: [address, BigInt(i)],
           })) as bigint;
 
           const tokenURI = (await publicClient.readContract({
-            address: sepoliaCA,
-            abi: abi,
+            address: contractAddress,
+            abi,
             functionName: "tokenURI",
             args: [tokenId],
           })) as string;
@@ -79,13 +107,17 @@ const Page: React.FC = () => {
             nftName: metadata.name,
             nftDescription: metadata.description,
             attributes: metadata.attributes,
-            transactionHash: "",
+            transactionHash: metadata.transactionHash,
             tokenId: tokenId.toString(),
           });
         }
 
-        setNfts((prevNFTs) => [...prevNFTs, ...fetchedNFTs]);
-
+        const fetchedNFTsMap = new Map(
+          fetchedNFTs.map((nft) => [nft.tokenId, nft])
+        );
+        const existingNFTsMap = new Map(nfts.map((nft) => [nft.tokenId, nft]));
+        const allNFTsMap = new Map([...existingNFTsMap, ...fetchedNFTsMap]);
+        setNfts(Array.from(allNFTsMap.values()));
         setCurrentPage(page + 1);
       } catch (error) {
         console.error("Failed to fetch NFTs:", error);
@@ -94,14 +126,22 @@ const Page: React.FC = () => {
         setLoadingInitial(false);
       }
     },
-    [address, publicClient, nftCount, loadingMore]
+    [address, publicClient, nftCount, loadingMore, chain?.id, nfts]
   );
 
   useEffect(() => {
-    if (loadingInitial) {
+    if (loadingInitial && chain?.id !== null) {
       fetchNFTs(currentPage);
     }
-  }, [loadingInitial, fetchNFTs, currentPage]);
+  }, [loadingInitial, fetchNFTs, currentPage, chain?.id]);
+
+  useEffect(() => {
+    if (chain?.id !== null) {
+      setNfts([]);
+      setCurrentPage(1);
+      setLoadingInitial(true);
+    }
+  }, [chain?.id]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -128,21 +168,24 @@ const Page: React.FC = () => {
         <p className="text-center text-white">No NFTs found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-          {nfts.map((nft) => (
-            <NFTCard
-              key={nft.tokenId}
-              imageUrl={nft.imageUrl}
-              nftName={nft.nftName}
-              nftDescription={nft.nftDescription}
-              attributes={nft.attributes}
-              transactionHash={nft.transactionHash}
-              sepoliaCA={sepoliaCA}
-              tokenId={nft.tokenId}
-            />
-          ))}
+          {nfts.map((nft, index) => {
+            const { address: contractAddress } = getContractDetails();
+            return (
+              <NFTCard
+                key={`${nft.tokenId}-${index}`}
+                imageUrl={nft.imageUrl}
+                nftName={nft.nftName}
+                nftDescription={nft.nftDescription}
+                attributes={nft.attributes}
+                transactionHash={nft.transactionHash}
+                contractAddress={contractAddress}
+                tokenId={nft.tokenId}
+              />
+            );
+          })}
           {loadingMore &&
             Array.from({ length: NFTsPerPage }).map((_, index) => (
-              <SkeletonCard key={index} />
+              <SkeletonCard key={`skeleton-${index}`} />
             ))}
         </div>
       )}

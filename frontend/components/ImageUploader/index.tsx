@@ -2,7 +2,8 @@
 import RippleButton from "@/components/Buttons/RippleButton";
 import { useAccount, useConfig, useWriteContract } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
-import contractABI from "../../aiArtABI.json";
+import mintXABIsepolia from "../../mintXsepolia.json";
+import mintXABIfuji from "../../mintXfuji.json";
 import NFTCard from "@/components/NFTCard";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -12,10 +13,11 @@ import XIcon from "../Icons/XIcon";
 import UploadIcon from "../Icons/UploadIcon";
 import { RingLoader } from "react-spinners";
 import GenerateButton from "../Icons/GenerateButton";
-import AttributesModal from "../AttributesModal";
+import Image from "next/image";
+// import AttributesModal from "../AttributesModal";
 
 const ImageUploader: React.FC = () => {
-  const { isConnected } = useAccount();
+  const { isConnected, chain } = useAccount();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [generatedImageUrl, setIsGeneratedImageUrl] = useState<string | null>(
@@ -36,13 +38,33 @@ const ImageUploader: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   // const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // const mintCA = process.env.MINT_CONTRACT! as `0x${string}`;
   const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
-  // const arbitrumCA = process.env.ARBITRUM_CA! as `0x${string}`;
-  const abi = contractABI.abi;
-  const config = useConfig();
+  const mxABIsepolia = mintXABIsepolia.abi;
 
+  const fujiCA = process.env.FUJI_CA! as `0x${string}`;
+  const mxABIfuji = mintXABIfuji.abi;
+
+  const config = useConfig();
   const { writeContractAsync } = useWriteContract();
+
+  // Function to get the contract address and ABI based on chain ID
+  const getContractDetails = () => {
+    if (chain?.id === 11155111) {
+      console.log("Using Sepolia contract");
+      return {
+        address: sepoliaCA,
+        abi: mxABIsepolia,
+      };
+    } else if (chain?.id === 43113) {
+      console.log("Using Fuji contract");
+      return {
+        address: fujiCA,
+        abi: mxABIfuji,
+      };
+    } else {
+      throw new Error("Unsupported network");
+    }
+  };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
@@ -169,10 +191,16 @@ const ImageUploader: React.FC = () => {
 
       const metadataURI = `https://gateway.pinata.cloud/ipfs/${pinJSONResponse.data.IpfsHash}`;
 
+      const { address: contractAddress, abi } = getContractDetails();
+
+      console.log("Contract Address:", contractAddress);
+      console.log("Metadata URI:", metadataURI);
+      console.log("Network ID:", chain?.id);
+
       // Mint NFT
       const transactionHash = await writeContractAsync({
         abi,
-        address: sepoliaCA,
+        address: contractAddress,
         functionName: "mintNFT",
         args: [metadataURI],
       });
@@ -188,7 +216,7 @@ const ImageUploader: React.FC = () => {
       }
 
       // Extract the token ID from the transaction receipt logs
-      const tokenId = receipt.logs[0].topics[3];
+      const tokenId = receipt.logs[0]?.topics[3];
 
       setMintedNFTDetails({
         nftName,
@@ -284,13 +312,14 @@ const ImageUploader: React.FC = () => {
                       animate={{ y: -10 }}
                       transition={{ delay: 0.1 }}
                     >
-                      <div className="relative">
-                        <img
+                      <div className="relative w-[256px] h-[256px]">
+                        <Image
                           src={uploadedImageUrl!}
                           alt="Uploaded Image"
                           className="rounded shadow-md shadow-[#373737]"
-                          style={{ maxWidth: "100%", height: "auto" }}
-                          fetchPriority="high"
+                          width={256}
+                          height={256}
+                          priority
                         />
                         <XIcon
                           className="h-6 w-6 cursor-pointer text-white bg-[#aeaeae] hover:bg-[#8e8e8e] m-1 rounded"
@@ -367,14 +396,14 @@ const ImageUploader: React.FC = () => {
                     animate={{ y: -10 }}
                     transition={{ delay: 0.1 }}
                   >
-                    <div className="relative">
-                      <img
-                        src={generatedImageUrl}
+                    <div className="relative w-[256px] h-[256px]">
+                      <Image
+                        src={generatedImageUrl!}
                         alt="Generated Image"
                         className="rounded shadow-md shadow-[#373737]"
-                        style={{ maxWidth: "100%", height: "auto" }}
-                        onLoad={() => setImageLoaded(true)}
-                        fetchPriority="high"
+                        width={256}
+                        height={256}
+                        priority
                       />
                       {imageLoaded && (
                         <XIcon
@@ -501,7 +530,7 @@ const ImageUploader: React.FC = () => {
             nftDescription={mintedNFTDetails.nftDescription}
             attributes={mintedNFTDetails.attributes}
             transactionHash={mintedNFTDetails.transactionHash}
-            sepoliaCA={sepoliaCA}
+            contractAddress={getContractDetails().address}
             tokenId={mintedNFTDetails.tokenId}
           />
           <div className="flex justify-center mt-14">

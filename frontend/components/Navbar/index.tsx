@@ -52,14 +52,14 @@ const Navbar = () => {
                   MINT
                 </Link>
               </li>
-              {/* <li className={isActive("/bridge")}>
+              <li className={isActive("/bridge")}>
                 <Link
                   href="/bridge"
                   className="cursor-pointer hover:text-[#FF10F0]"
                 >
                   BRIDGE
                 </Link>
-              </li> */}
+              </li>
               <li className={isActive("/nfts")}>
                 <Link
                   href="/nfts"

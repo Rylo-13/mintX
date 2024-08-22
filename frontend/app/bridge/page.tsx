@@ -1,3 +1,17 @@
+import BridgeNFT from "@/components/BridgeNFT";
+import React from "react";
+
+const Page: React.FC = () => {
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-center my-8">NFT Bridging</h1>
+      <BridgeNFT />
+    </div>
+  );
+};
+
+export default Page;
+
 // "use client";
 // import RippleButton from "@/components/Buttons/RippleButton";
 // import {
@@ -248,13 +262,3 @@
 // };
 
 // export default Page;
-
-const Page = () => {
-  return (
-    <div className="pt-16 flex justify-center items-center text-center">
-      BRIDGE!
-    </div>
-  );
-};
-
-export default Page;

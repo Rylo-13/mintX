@@ -100,8 +100,9 @@
 .transactionHash {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 16px;
   text-align: center;
+  cursor: pointer;
+  word-break: break-all;
 }
 
 .qrCode {

@@ -404,6 +404,7 @@ const ImageUploader: React.FC = () => {
                         width={256}
                         height={256}
                         priority
+                        onLoadingComplete={() => setImageLoaded(true)}
                       />
                       {imageLoaded && (
                         <XIcon

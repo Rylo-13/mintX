@@ -495,6 +495,8 @@ const ImageUploader: React.FC = () => {
             </div>
           </div>
 
+          {/* to be implemented */}
+
           {/* <div className="mb-4">
             <AttributesModal
               attributes={attributes}

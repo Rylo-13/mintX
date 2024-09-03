@@ -1,6 +1,6 @@
 "use client";
 import RippleButton from "@/components/Buttons/RippleButton";
-import { useAccount, useConfig, useWriteContract } from "wagmi";
+import { useAccount, useConfig, useWriteContract, useSwitchChain } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import mintXABIsepolia from "../../mintXsepolia.json";
 import mintXABIfuji from "../../mintXfuji.json";
@@ -18,6 +18,7 @@ import Image from "next/image";
 
 const ImageUploader: React.FC = () => {
   const { isConnected, chain } = useAccount();
+  const { switchChain } = useSwitchChain();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [generatedImageUrl, setIsGeneratedImageUrl] = useState<string | null>(
@@ -41,30 +42,30 @@ const ImageUploader: React.FC = () => {
   const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
   const mxABIsepolia = mintXABIsepolia.abi;
 
-  const fujiCA = process.env.FUJI_CA! as `0x${string}`;
-  const mxABIfuji = mintXABIfuji.abi;
+  // const fujiCA = process.env.FUJI_CA! as `0x${string}`;
+  // const mxABIfuji = mintXABIfuji.abi;
 
   const config = useConfig();
   const { writeContractAsync } = useWriteContract();
 
   // Function to get the contract address and ABI based on chain ID
-  const getContractDetails = () => {
-    if (chain?.id === 11155111) {
-      console.log("Using Sepolia contract");
-      return {
-        address: sepoliaCA,
-        abi: mxABIsepolia,
-      };
-    } else if (chain?.id === 43113) {
-      console.log("Using Fuji contract");
-      return {
-        address: fujiCA,
-        abi: mxABIfuji,
-      };
-    } else {
-      throw new Error("Unsupported network");
-    }
-  };
+  // const getContractDetails = () => {
+  //   if (chain?.id === 11155111) {
+  //     console.log("Using Sepolia contract");
+  //     return {
+  //       address: sepoliaCA,
+  //       abi: mxABIsepolia,
+  //     };
+  //   } else if (chain?.id === 43113) {
+  //     console.log("Using Fuji contract");
+  //     return {
+  //       address: fujiCA,
+  //       abi: mxABIfuji,
+  //     };
+  //   } else {
+  //     throw new Error("Unsupported network");
+  //   }
+  // };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
@@ -126,6 +127,15 @@ const ImageUploader: React.FC = () => {
   const handleMintNFT = async () => {
     if (!isConnected) {
       setErrors("Wallet is not connected.");
+      return;
+    }
+
+    if (chain?.id !== 11155111) {
+      setErrors("Please connect to the Sepolia network.");
+      if (switchChain) {
+        // Prompt user to switch to Sepolia network
+        switchChain({ chainId: 11155111 }); // Sepolia network ID
+      }
       return;
     }
 
@@ -191,16 +201,14 @@ const ImageUploader: React.FC = () => {
 
       const metadataURI = `https://gateway.pinata.cloud/ipfs/${pinJSONResponse.data.IpfsHash}`;
 
-      const { address: contractAddress, abi } = getContractDetails();
-
-      console.log("Contract Address:", contractAddress);
+      console.log("Contract Address:", sepoliaCA);
       console.log("Metadata URI:", metadataURI);
       console.log("Network ID:", chain?.id);
 
       // Mint NFT
       const transactionHash = await writeContractAsync({
-        abi,
-        address: contractAddress,
+        abi: mxABIsepolia,
+        address: sepoliaCA,
         functionName: "mintNFT",
         args: [metadataURI],
       });
@@ -404,7 +412,7 @@ const ImageUploader: React.FC = () => {
                         width={256}
                         height={256}
                         priority
-                        onLoadingComplete={() => setImageLoaded(true)}
+                        onLoad={() => setImageLoaded(true)}
                       />
                       {imageLoaded && (
                         <XIcon
@@ -531,7 +539,7 @@ const ImageUploader: React.FC = () => {
             nftDescription={mintedNFTDetails.nftDescription}
             attributes={mintedNFTDetails.attributes}
             transactionHash={mintedNFTDetails.transactionHash}
-            contractAddress={getContractDetails().address}
+            contractAddress={sepoliaCA}
             tokenId={mintedNFTDetails.tokenId}
           />
           <div className="flex justify-center mt-14">

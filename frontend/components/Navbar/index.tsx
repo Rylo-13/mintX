@@ -62,7 +62,7 @@ const Navbar = () => {
               </li>
               <li className={isActive("/nfts")}>
                 <Link
-                  href="/nfts"
+                  href="/gallery"
                   className="cursor-pointer hover:text-[#FF10F0]"
                 >
                   GALLERY
@@ -94,14 +94,14 @@ const Navbar = () => {
               MINT
             </Link>
           </li>
-          {/* <li className={isActiveSide("/bridge")}>
+          <li className={isActiveSide("/bridge")}>
             <Link
               href="/bridge"
               className="cursor-pointer hover:text-[#FF10F0]"
             >
               BRIDGE
             </Link>
-          </li> */}
+          </li>
           <li className={isActiveSide("/nfts")}>
             <Link href="/nfts" className="cursor-pointer hover:text-[#FF10F0]">
               NFTS

@@ -602,56 +602,6 @@
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "dstEid",
-          "type": "uint32"
-        }
-      ],
-      "name": "TokenBurned",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "srcEid",
-          "type": "uint32"
-        }
-      ],
-      "name": "TokenMinted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "from",
-          "type": "address"
-        },
-        {
           "indexed": true,
           "internalType": "address",
           "name": "to",
@@ -1556,7 +1506,7 @@
       "inputs": [
         {
           "internalType": "string",
-          "name": "_baseTokenURI",
+          "name": "baseURI",
           "type": "string"
         }
       ],

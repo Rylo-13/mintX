@@ -34,13 +34,11 @@ const Page: React.FC = () => {
 
   const getContractDetails = () => {
     if (chain?.id === 11155111) {
-      console.log("Using Sepolia contract");
       return {
         address: sepoliaCA,
         abi: mxABIsepolia,
       };
     } else {
-      console.log("Using Fuji contract");
       return {
         address: fujiCA,
         abi: mxABIfuji,
@@ -100,18 +98,30 @@ const Page: React.FC = () => {
             resolvedTokenURI = `https://ipfs.io/ipfs/${tokenURI.substring(7)}`;
           }
 
-          const response = await fetch(resolvedTokenURI);
-          const metadata = await response.json();
+          console.log("Fetching metadata from:", resolvedTokenURI);
 
-          fetchedNFTs.push({
-            imageUrl: metadata.image,
-            nftName: metadata.name,
-            nftDescription: metadata.description,
-            attributes: metadata.attributes,
-            transactionHash: metadata.transactionHash,
-            tokenId: tokenId.toString(),
-            contractAddress,
-          });
+          try {
+            const response = await fetch(resolvedTokenURI);
+
+            // Log the full response object
+            console.log("Full response object:", response);
+
+            // Log the response body as JSON
+            const metadata = await response.json();
+            console.log("Response body:", metadata);
+
+            fetchedNFTs.push({
+              imageUrl: metadata.image,
+              nftName: metadata.name,
+              nftDescription: metadata.description,
+              attributes: metadata.attributes,
+              transactionHash: metadata.transactionHash,
+              tokenId: tokenId.toString(),
+              contractAddress,
+            });
+          } catch (error) {
+            console.error("Failed to fetch metadata:", error);
+          }
         }
 
         const fetchedNFTsMap = new Map(

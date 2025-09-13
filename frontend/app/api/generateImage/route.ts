@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { aiImageDescription } = await req.json();
-    //
+
     const requestData = {
       model: "dall-e-2",
       prompt: aiImageDescription,

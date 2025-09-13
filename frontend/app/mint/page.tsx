@@ -1,5 +1,5 @@
 "use client";
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/features/ImageUploader";
 
 const Page = () => {
   return (

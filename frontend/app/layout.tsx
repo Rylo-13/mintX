@@ -15,7 +15,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "MintX",
-  description: "NFT mint and bridge dapp",
+  description: "Create, mint and bridge NFTs on multiple blockchains.",
 };
 
 export default function RootLayout({

@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import NFTCard from "@/components/NFTCard";
-import SkeletonCard from "@/components/NFTSkeleton";
+import NFTCard from "@/components/features/NFTCard";
+import SkeletonCard from "@/components/ui/NFTSkeleton";
 import { useAccount, useReadContract, usePublicClient, useConfig } from "wagmi";
-import mintXABIsepolia from "../../mintXsepolia.json";
-import mintXABIfuji from "../../mintXfuji.json";
+import mintXABIsepolia from "../../config/abi/mintXsepolia.json";
+import mintXABIfuji from "../../config/abi/mintXfuji.json";
 
 type NFT = {
   tokenId: string;
@@ -26,10 +26,10 @@ const Page: React.FC = () => {
 
   const publicClient = usePublicClient();
 
-  const sepoliaCA = process.env.SEPOLIA_CA! as `0x${string}`;
+  const sepoliaCA = process.env.NEXT_PUBLIC_SEPOLIA_CA! as `0x${string}`;
   const mxABIsepolia = mintXABIsepolia.abi;
 
-  const fujiCA = process.env.FUJI_CA as `0x${string}`;
+  const fujiCA = process.env.NEXT_PUBLIC_FUJI_CA as `0x${string}`;
   const mxABIfuji = mintXABIfuji.abi;
 
   const getContractDetails = () => {

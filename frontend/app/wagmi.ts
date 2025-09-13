@@ -14,7 +14,7 @@ export function getConfig() {
     }),
     transports: {
       [mainnet.id]: http(),
-      [sepolia.id]: http(process.env.SEPOLIA_RPC_URL),
+      [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
       [arbitrumSepolia.id]: http(process.env.ARBITRUM_RPC_URL),
       [avalancheFuji.id]: http(process.env.FUJI_RPC_URL),
     },

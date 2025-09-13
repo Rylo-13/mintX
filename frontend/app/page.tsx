@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import RippleButton from "@/components/Buttons/RippleButton";
+import RippleButton from "@/components/ui/Buttons/RippleButton";
 import Image from "next/image";
 
 const Home: React.FC = () => {
@@ -12,34 +12,39 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen flex items-center justify-center welcomeContent">
+    <main className="relative min-h-screen flex items-center justify-center welcomeContent">
       <Image
-        // src="/distorted.svg"
-        // src="/distorted2.svg"
         src="/distorted3.svg"
-        alt="Background"
+        alt="Abstract background pattern"
         fill
         quality={100}
         priority
         className="object-cover z-0 opacity-90"
       />
-      <div className="z-10 w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto text-center bg-black bg-opacity-80 mb-16 py-8 sm:py-12 md:py-16 px-8 sm:px-12 md:px-16 rounded-lg">
-        <h1 className="text-5xl font-bold mb-6 sm:mb-8 md:mb-10 text-[#FF10F0]">
-          Welcome To MintX
-        </h1>
-        <p className="text-base sm:text-lg md:text-xl my-6 sm:my-8 md:my-10 px-8 sm:px-6 md:px-10 font-light justify-evenly text-center text-white">
-          Unleash your creativity by uploading your own art or generate unique
-          pieces with the help of AI.
-        </p>
-        <p className="text-base sm:text-lg md:text-xl my-6 sm:my-8 md:my-10 px-8 sm:px-6 md:px-10 font-light justify-evenly text-center text-white">
-          Turn your creations into NFTs and enjoy the freedom of transferring
-          them across multiple blockchains.
-        </p>
-        <div className="mt-6 sm:mt-8 md:mt-10">
-          <RippleButton text="Enter" active onClick={handleNavigate} />
+      <section className="z-10 max-w-4xl mx-auto text-center bg-black/80 backdrop-blur-sm p-8 md:p-16 rounded-lg shadow-2xl">
+        <header>
+          <h1 className="text-4xl md:text-5xl font-bold mb-8 text-[#FF10F0]">
+            Welcome To MintX
+          </h1>
+        </header>
+        <div className="space-y-6 mb-10">
+          <p className="text-lg md:text-xl font-light text-white leading-relaxed">
+            Unleash your creativity by uploading your own art or generate unique
+            pieces with the help of AI.
+          </p>
+          <p className="text-lg md:text-xl font-light text-white leading-relaxed">
+            Turn your creations into NFTs and enjoy the freedom of transferring
+            them across multiple blockchains.
+          </p>
         </div>
-      </div>
-    </div>
+        <RippleButton 
+          text="Enter" 
+          active 
+          onClick={handleNavigate}
+          className="text-lg px-8 py-3"
+        />
+      </section>
+    </main>
   );
 };
 

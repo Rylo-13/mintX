@@ -8,10 +8,19 @@ export async function POST(request: Request) {
     const apiKey = process.env.PINATA_API_KEY;
     const apiSecret = process.env.PINATA_API_SECRET;
 
+    console.log("API Key exists:", !!apiKey);
+    console.log("API Secret exists:", !!apiSecret);
+
     if (!apiKey || !apiSecret) {
       console.error("Missing Pinata API credentials");
       return NextResponse.json(
-        { error: "Server configuration error" },
+        {
+          error: "Server configuration error",
+          debug: {
+            hasApiKey: !!apiKey,
+            hasApiSecret: !!apiSecret
+          }
+        },
         { status: 500 }
       );
     }

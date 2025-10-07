@@ -4,8 +4,20 @@ import axios from "axios";
 
 export async function POST(request: Request) {
   try {
+    // Validate environment variables
+    const apiKey = process.env.PINATA_API_KEY;
+    const apiSecret = process.env.PINATA_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      console.error("Missing Pinata API credentials");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
     const formData = new FormData();
-    const file = await request.arrayBuffer(); // Get file data from request
+    const file = await request.arrayBuffer();
     formData.append("file", new Blob([file]), "image.png");
 
     const response = await axios.post(
@@ -14,17 +26,20 @@ export async function POST(request: Request) {
       {
         headers: {
           "Content-Type": "multipart/form-data",
-          pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY!,
-          pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET!,
+          pinata_api_key: apiKey,
+          pinata_secret_api_key: apiSecret,
         },
       }
     );
 
     return NextResponse.json(response.data);
-  } catch (error) {
-    console.error("Error pinning file to IPFS:", error);
+  } catch (error: any) {
+    console.error("Error pinning file to IPFS:", error?.response?.data || error?.message || error);
     return NextResponse.json(
-      { error: "Error pinning file to IPFS" },
+      {
+        error: "Error pinning file to IPFS",
+        details: error?.response?.data?.error || error?.message
+      },
       { status: 500 }
     );
   }

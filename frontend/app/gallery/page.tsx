@@ -172,10 +172,8 @@ const Page: React.FC = () => {
   }, [loadingMore, loadingInitial, currentPage, fetchNFTs]);
 
   return (
-    <div className="container mx-auto p-4 mb-10">
-      <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 h-28 flex items-center justify-center mb-10 mx-2">
-        <h1 className="text-5xl font-bold text-white">Your NFT Gallery</h1>
-      </div>
+    <div className="container mx-auto max-w-7xl my-8 px-4 pb-8">
+      <h2 className="text-3xl font-light text-white tracking-tight mb-8">Your NFT Gallery</h2>
       {!loadingInitial && nfts.length === 0 ? (
         <p className="text-center text-white">No NFTs found.</p>
       ) : (
@@ -192,6 +190,7 @@ const Page: React.FC = () => {
                 transactionHash={nft.transactionHash}
                 contractAddress={contractAddress}
                 tokenId={nft.tokenId}
+                chainId={chain?.id}
               />
             );
           })}

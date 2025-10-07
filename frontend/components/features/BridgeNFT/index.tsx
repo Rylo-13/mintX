@@ -9,11 +9,16 @@ import {
   useWriteContract,
 } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
-import mintXABIsepolia from "../../config/abi/mintXsepolia.json";
-import mintXABIfuji from "../../config/abi/mintXfuji.json";
+import mintXABIsepolia from "../../../config/abi/mintXsepolia.json";
+import mintXABIfuji from "../../../config/abi/mintXfuji.json";
 import { RingLoader } from "react-spinners";
 import { ethers } from "ethers";
-import RippleButton from "../Buttons/RippleButton";
+import RippleButton from "../../ui/Buttons/RippleButton";
+import Dropdown from "../../ui/Dropdown";
+import ProcessModal from "../../ui/ProcessModal";
+import InfoIcon from "../../ui/Icons/InfoIcon";
+import Alert from "../../ui/Alert";
+import { getErrorMessage } from "../../../utils/errorHandler";
 
 interface MessagingFee {
   nativeFee: bigint;
@@ -37,6 +42,38 @@ const BridgeNFT: React.FC = () => {
   const [isRestoringURI, setIsRestoringURI] = useState(false);
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [bridgeStatus, setBridgeStatus] = useState<string | null>(null);
+  const [showBridgeModal, setShowBridgeModal] = useState(false);
+  const [bridgingSteps, setBridgingSteps] = useState<
+    Array<{
+      id: string;
+      title: string;
+      description: string;
+      status: "pending" | "loading" | "completed" | "error";
+    }>
+  >([
+    {
+      id: "capture",
+      title: "Capturing Metadata",
+      description: "Saving NFT metadata",
+      status: "pending",
+    },
+    {
+      id: "approve",
+      title: "Approving Transfer",
+      description: "Approving contract",
+      status: "pending",
+    },
+    {
+      id: "bridge",
+      title: "Bridging NFT",
+      description: "Sending to destination chain",
+      status: "pending",
+    },
+  ]);
+  const [currentBridgingStep, setCurrentBridgingStep] = useState<string | null>(
+    null
+  );
+  const [bridgingModalError, setBridgingModalError] = useState<string | null>(null);
   const [nfts, setNfts] = useState<
     {
       value: string;
@@ -252,7 +289,7 @@ const BridgeNFT: React.FC = () => {
               args: [tokenId],
             })) as string;
 
-            const hasURI = tokenURI && tokenURI.length > 0;
+            const hasURI: boolean = Boolean(tokenURI && tokenURI.length > 0);
             let nftName = `Token #${tokenId.toString()}`;
             let imageUrl = undefined;
             let metadata = undefined;
@@ -325,6 +362,33 @@ const BridgeNFT: React.FC = () => {
     }
   };
 
+  // Helper function to update step status
+  const updateBridgingStep = (
+    stepId: string,
+    status: "pending" | "loading" | "completed" | "error"
+  ) => {
+    setBridgingSteps((prev) =>
+      prev.map((step) => (step.id === stepId ? { ...step, status } : step))
+    );
+  };
+
+  // Helper function to reset all steps to pending
+  const resetBridgingSteps = () => {
+    setBridgingSteps((prev) =>
+      prev.map((step) => ({ ...step, status: "pending" as const }))
+    );
+    setCurrentBridgingStep(null);
+    setBridgingModalError(null);
+  };
+
+  const handleCloseBridgeModal = () => {
+    setShowBridgeModal(false);
+    if (bridgingModalError) {
+      setIsBridging(false);
+      setCurrentBridgingStep(null);
+    }
+  };
+
   const handleBridgeNFT = async () => {
     if (
       !isConnected ||
@@ -339,13 +403,16 @@ const BridgeNFT: React.FC = () => {
 
     setIsBridging(true);
     setBridgeError(null);
-    setBridgeStatus("Preparing bridge transaction...");
+    setShowBridgeModal(true);
+    resetBridgingSteps();
+    setBridgingModalError(null);
 
     try {
       const { address: contractAddress, abi } = getContractDetails();
 
       // Step 1: Capture the original URI before bridging
-      setBridgeStatus("Capturing NFT metadata...");
+      setCurrentBridgingStep("capture");
+      updateBridgingStep("capture", "loading");
 
       const originalURI = (await publicClient?.readContract({
         address: contractAddress,
@@ -396,7 +463,11 @@ const BridgeNFT: React.FC = () => {
         throw new Error("Failed to estimate fees");
       }
 
-      setBridgeStatus("Approving NFT for transfer...");
+      updateBridgingStep("capture", "completed");
+
+      // Step 2: Approve the NFT
+      setCurrentBridgingStep("approve");
+      updateBridgingStep("approve", "loading");
 
       const approvalTx = await writeContractAsync({
         abi: abi,
@@ -410,7 +481,11 @@ const BridgeNFT: React.FC = () => {
         confirmations: 2,
       });
 
-      setBridgeStatus("Sending NFT across chains...");
+      updateBridgingStep("approve", "completed");
+
+      // Step 3: Bridge the NFT
+      setCurrentBridgingStep("bridge");
+      updateBridgingStep("bridge", "loading");
 
       const sendTx = await writeContractAsync({
         abi: abi,
@@ -424,34 +499,47 @@ const BridgeNFT: React.FC = () => {
         value: quote.nativeFee,
       });
 
-      setBridgeStatus("Waiting for confirmation...");
-
       await waitForTransactionReceipt(config, {
         hash: sendTx,
         confirmations: 2,
       });
 
-      setBridgeStatus(
-        "NFT successfully bridged! 🎉 Switch to the destination chain to restore metadata."
-      );
+      updateBridgingStep("bridge", "completed");
 
-      // Clear selections after bridging
+      // Brief pause to show completion before closing modal
       setTimeout(() => {
-        setSelectedTokenId(null);
-        setSelectedTargetChain(null);
-        setBridgeStatus(null);
-        fetchNFTs();
-      }, 5000);
+        setShowBridgeModal(false);
+        setBridgeStatus(
+          "NFT successfully bridged! 🎉 Switch to the destination chain to restore metadata."
+        );
+
+        // Clear selections after showing success message
+        setTimeout(() => {
+          setSelectedTokenId(null);
+          setSelectedTargetChain(null);
+          setBridgeStatus(null);
+          fetchNFTs();
+        }, 5000);
+      }, 1000);
+
     } catch (error) {
       console.error("Error during bridging:", error);
-      if (error instanceof Error) {
-        setBridgeError(`Bridging failed: ${error.message}`);
-      } else {
-        setBridgeError("Bridging failed: An unknown error occurred.");
+      const errorMessage = error instanceof Error
+        ? `Bridging failed: ${error.message}`
+        : "Bridging failed: An unknown error occurred.";
+
+      setBridgeError(errorMessage);
+      setBridgingModalError(errorMessage);
+
+      // Mark current step as error
+      if (currentBridgingStep) {
+        updateBridgingStep(currentBridgingStep, "error");
       }
+
       setBridgeStatus(null);
     } finally {
       setIsBridging(false);
+      setCurrentBridgingStep(null);
     }
   };
 
@@ -546,289 +634,227 @@ const BridgeNFT: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-xl my-4 p-3">
-      <div className="border bg-[#101010] p-10 rounded-lg">
-        <h2 className="text-3xl font-bold text-white mb-8 text-center">
-          Bridge Your NFT
-        </h2>
+    <div className="container mx-auto max-w-7xl my-8 px-4">
+      {bridgeError && (
+        <Alert
+          type="error"
+          title="Error"
+          message={getErrorMessage(bridgeError)}
+          className="mb-6"
+        />
+      )}
 
-        {bridgeError && (
-          <div className="bg-gradient-to-r from-red-900 to-red-800 text-white p-4 rounded-lg mb-6 border border-red-700">
-            <div className="flex items-center">
-              <span className="text-red-300 mr-2">⚠️</span>
-              {bridgeError}
-            </div>
-          </div>
-        )}
+      {bridgeStatus && (
+        <Alert
+          type="success"
+          message={bridgeStatus}
+          className="mb-6"
+        />
+      )}
 
-        {bridgeStatus && (
-          <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-4 rounded-lg mb-6 border border-blue-700">
-            <div className="flex items-center">
-              <span className="text-blue-300 mr-2">ℹ️</span>
-              {bridgeStatus}
-            </div>
-          </div>
-        )}
-
-        {/* Pending URI Restoration Section */}
-        {pendingURIs.length > 0 && (
-          <div className="bg-gradient-to-r from-yellow-900 to-yellow-800 text-white p-6 rounded-lg mb-6 border border-yellow-700">
-            <h3 className="font-bold mb-3 text-xl flex items-center">
-              <span className="mr-2">🔄</span>
-              NFTs Awaiting Metadata Restoration
+      {/* Pending URI Restoration Section */}
+      {pendingURIs.length > 0 && (
+        <div className="mb-8 bg-[#1A1A1A] rounded-3xl border border-white/10 overflow-hidden">
+          <div className="p-6 border-b border-white/10">
+            <h3 className="text-2xl font-light text-white tracking-tight mb-2">
+              Complete Your Bridge
             </h3>
-            <p className="text-yellow-100 text-sm mb-4 leading-relaxed">
-              These NFTs were bridged but need their metadata restored. Make
-              sure the tokens have arrived on this chain first!
+            <p className="text-sm text-gray-400 font-light">
+              Your NFT has arrived! Click below to restore metadata.
             </p>
-            <div className="space-y-3">
-              {pendingURIs.map((pendingURI) => (
-                <div
-                  key={pendingURI.tokenId}
-                  className="flex items-center justify-between bg-yellow-800/50 backdrop-blur-sm p-4 rounded-lg border border-yellow-600/50"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      Token #{pendingURI.tokenId}
-                    </span>
-                    <span className="text-xs text-yellow-200 flex items-center mt-1">
-                      <span className="mr-1">📍</span>
-                      From:{" "}
-                      {pendingURI.sourceChain === 11155111 ? "Sepolia" : "Fuji"}
-                    </span>
-                  </div>
-                  <RippleButton
-                    text={isRestoringURI ? "Checking..." : "Restore Metadata"}
-                    onClick={() => handleRestoreURI(pendingURI.tokenId)}
-                    disabled={isRestoringURI}
-                    className="text-sm px-4 py-2"
-                    active
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-3 bg-yellow-800/30 rounded-lg border border-yellow-600/30">
-              <p className="text-xs text-yellow-100 flex items-center">
-                <span className="mr-2">💡</span>
-                <strong className="mr-1">Tip:</strong> LayerZero bridging takes
-                1-5 minutes. If restore fails, wait a bit longer and try again.
-              </p>
-            </div>
           </div>
-        )}
 
-        <div className="space-y-6">
-          <div>
-            <label className="block text-white text-sm font-semibold mb-3 uppercase tracking-wide">
-              Select NFT to Bridge
-            </label>
-            <div className="relative">
-              <select
-                className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-800/50 backdrop-blur-sm text-white appearance-none cursor-pointer hover:border-[#D600C4] focus:border-[#D600C4] focus:outline-none focus:ring-2 focus:ring-[#D600C4]/20 transition-all duration-200"
-                value={selectedTokenId || ""}
-                onChange={(e) => setSelectedTokenId(Number(e.target.value))}
-                disabled={isBridging}
+          <div className="p-6 space-y-3">
+            {pendingURIs.map((pendingURI) => (
+              <div
+                key={pendingURI.tokenId}
+                className="bg-[#0D0D0D] rounded-xl border border-white/10 p-5"
               >
-                <option value="" disabled>
-                  {nfts.length === 0 ? "No NFTs available" : "Choose an NFT..."}
-                </option>
-                {nfts.map((nft) => (
-                  <option
-                    key={nft.value}
-                    value={nft.value}
-                    className="bg-gray-800"
-                  >
-                    {nft.label} (ID: {nft.value}){" "}
-                    {!nft.hasURI ? " ⚠️ No Metadata" : ""}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Selected NFT Preview */}
-          {selectedNFT && selectedNFT.imageUrl && (
-            <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-xl p-6 shadow-2xl">
-              <h3 className="text-white text-sm font-semibold mb-4 uppercase tracking-wide flex items-center">
-                <span className="mr-2">🖼️</span>
-                Selected NFT Preview
-              </h3>
-              <div className="flex flex-col lg:flex-row gap-6 items-start">
-                <div className="flex-shrink-0 mx-auto lg:mx-0">
-                  <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#D600C4] to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                    <div className="relative w-32 h-32 bg-black rounded-xl overflow-hidden">
-                      <img
-                        src={selectedNFT.imageUrl}
-                        alt={selectedNFT.label}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
-                        }}
-                      />
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-base font-light text-white mb-1">
+                      NFT #{pendingURI.tokenId}
+                    </div>
+                    <div className="text-xs text-gray-400 font-light">
+                      Bridged from {pendingURI.sourceChain === 11155111 ? "Sepolia" : "Fuji"}
                     </div>
                   </div>
-                  <div className="text-center mt-3">
-                    <span className="text-[#D600C4] text-sm font-medium bg-[#D600C4]/10 px-3 py-1 rounded-full border border-[#D600C4]/20">
-                      Token ID: {selectedNFT.value}
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-[#FF10F0] rounded-full animate-pulse"></div>
+                    <span className="text-xs text-gray-400 font-light">Ready</span>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0 text-center lg:text-left">
-                  <h4 className="text-white font-bold text-xl mb-3 truncate">
-                    {selectedNFT.label}
-                  </h4>
-                  {selectedNFT.metadata?.description && (
-                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                      {selectedNFT.metadata.description}
-                    </p>
-                  )}
-                  {selectedNFT.metadata?.attributes &&
-                    selectedNFT.metadata.attributes.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-gray-400 text-xs uppercase tracking-wide font-medium">
-                          Attributes
-                        </p>
-                        <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                          {selectedNFT.metadata.attributes
-                            .slice(0, 3)
-                            .map((attr: any, index: number) => (
-                              <span
-                                key={index}
-                                className="inline-flex items-center bg-gradient-to-r from-[#D600C4] to-purple-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg"
-                              >
-                                {attr.key || attr.trait_type}: {attr.value}
-                              </span>
-                            ))}
-                          {selectedNFT.metadata.attributes.length > 3 && (
-                            <span className="inline-flex items-center bg-gray-700/50 backdrop-blur-sm text-gray-300 text-xs px-3 py-1.5 rounded-full border border-gray-600/50">
-                              +{selectedNFT.metadata.attributes.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
+
+                <RippleButton
+                  text={isRestoringURI ? "Restoring..." : "Restore Metadata"}
+                  onClick={() => handleRestoreURI(pendingURI.tokenId)}
+                  disabled={isRestoringURI}
+                  className="w-full text-sm font-light py-2.5"
+                  active
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="px-6 pb-6">
+            <div className="p-4 bg-[#0D0D0D] rounded-xl border border-white/10">
+              <div className="flex items-start gap-3">
+                <InfoIcon />
+                <div className="text-xs text-gray-400 font-light leading-relaxed">
+                  <span className="text-white font-normal">Note:</span> Bridging takes 1-5 minutes.
+                  If the restore button doesn't work immediately, please wait a moment and try again.
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Column - NFT Selection & Preview */}
+        <div className="space-y-6">
+          <h2 className="text-3xl font-light text-white tracking-tight">
+            Select NFT
+          </h2>
 
           <div>
-            <label className="block text-white text-sm font-semibold mb-3 uppercase tracking-wide">
-              Select Target Chain
+            <label className="text-xs text-gray-400 mb-1.5 block font-light">
+              NFT to Bridge
             </label>
-            <div className="relative">
-              <select
-                className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-800/50 backdrop-blur-sm text-white appearance-none cursor-pointer hover:border-[#D600C4] focus:border-[#D600C4] focus:outline-none focus:ring-2 focus:ring-[#D600C4]/20 transition-all duration-200"
-                value={selectedTargetChain || ""}
-                onChange={(e) => setSelectedTargetChain(Number(e.target.value))}
+            <Dropdown
+              options={nfts.map((nft) => ({
+                value: nft.value,
+                label: `${nft.label} (ID: ${nft.value})${!nft.hasURI ? " ⚠️ No Metadata" : ""}`,
+              }))}
+              value={selectedTokenId}
+              onChange={(value) => setSelectedTokenId(Number(value))}
+              placeholder={nfts.length === 0 ? "No NFTs available" : "Choose an NFT..."}
+              disabled={isBridging}
+            />
+          </div>
+
+          {selectedNFT && selectedNFT.imageUrl && (
+            <div className="flex justify-center">
+              <img
+                src={selectedNFT.imageUrl}
+                alt={selectedNFT.label}
+                className="w-80 h-80 object-fill rounded-2xl"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Bridge Details */}
+        <div className="space-y-6">
+          <h2 className="text-3xl font-light text-white tracking-tight">
+            Bridge Details
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-gray-400 mb-1.5 block font-light">
+                NFT Name
+              </label>
+              <input
+                className="w-full px-3 py-2 bg-[#0D0D0D] border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                type="text"
+                value={selectedNFT?.label || ""}
+                disabled
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 mb-1.5 block font-light">
+                Token ID
+              </label>
+              <input
+                className="w-full px-3 py-2 bg-[#0D0D0D] border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                type="text"
+                value={selectedNFT?.value || ""}
+                disabled
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 mb-1.5 block font-light">
+                Target Chain
+              </label>
+              <Dropdown
+                options={targetChainOptions}
+                value={selectedTargetChain}
+                onChange={(value) => setSelectedTargetChain(Number(value))}
+                placeholder="Choose destination chain..."
                 disabled={isBridging}
-              >
-                <option value="" disabled>
-                  Choose destination chain...
-                </option>
-                {targetChainOptions.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    className="bg-gray-800"
-                  >
-                    🌐 {option.label}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+              />
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-white/5">
+            <label className="text-xs text-gray-400 mb-2 block font-light">
+              Important Information
+            </label>
+            <div className="space-y-2">
+              <div className="flex items-start space-x-2">
+                <span className="text-[#FF10F0] mt-0.5 text-xs">•</span>
+                <span className="text-gray-400 text-xs leading-relaxed font-light">
+                  NFT metadata is captured automatically before bridging
+                </span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="text-[#FF10F0] mt-0.5 text-xs">•</span>
+                <span className="text-gray-400 text-xs leading-relaxed font-light">
+                  After bridging, switch to the destination chain
+                </span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="text-[#FF10F0] mt-0.5 text-xs">•</span>
+                <span className="text-gray-400 text-xs leading-relaxed font-light">
+                  Use the "Restore Metadata" button to complete the process
+                </span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="text-[#FF10F0] mt-0.5 text-xs">•</span>
+                <span className="text-gray-400 text-xs leading-relaxed font-light">
+                  The process may take a few minutes to complete
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="relative">
+          <div className="pt-3">
             <RippleButton
               text={isBridging ? "Bridging..." : "Bridge NFT"}
               onClick={handleBridgeNFT}
               disabled={isBridging || !selectedTokenId || !selectedTargetChain}
-              className="w-full py-4 text-lg font-semibold"
+              className="w-full text-sm font-light py-2.5"
               active
             />
             {isBridging && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <RingLoader color="#D600C4" size={24} />
-                  <span className="text-white font-medium">Processing...</span>
+                  <RingLoader color="#FF10F0" size={24} />
+                  <span className="text-white font-light">Processing...</span>
                 </div>
               </div>
             )}
           </div>
         </div>
-
-        <div className="mt-8 p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm rounded-xl border border-gray-700/50">
-          <h3 className="text-white font-semibold mb-4 flex items-center text-lg">
-            <span className="mr-2">📋</span>
-            Bridge Information
-          </h3>
-          <div className="grid grid-cols-1 gap-3">
-            <div className="flex items-start space-x-3">
-              <span className="text-[#D600C4] mt-0.5">🔄</span>
-              <span className="text-gray-300 text-sm leading-relaxed">
-                NFT metadata is captured automatically before bridging
-              </span>
-            </div>
-            <div className="flex items-start space-x-3">
-              <span className="text-[#D600C4] mt-0.5">🔀</span>
-              <span className="text-gray-300 text-sm leading-relaxed">
-                After bridging, switch to the destination chain
-              </span>
-            </div>
-            <div className="flex items-start space-x-3">
-              <span className="text-[#D600C4] mt-0.5">🔧</span>
-              <span className="text-gray-300 text-sm leading-relaxed">
-                Use the "Restore Metadata" button to complete the process
-              </span>
-            </div>
-            <div className="flex items-start space-x-3">
-              <span className="text-[#D600C4] mt-0.5">💰</span>
-              <span className="text-gray-300 text-sm leading-relaxed">
-                Bridge fees are paid in the native token of the source chain
-              </span>
-            </div>
-            <div className="flex items-start space-x-3">
-              <span className="text-[#D600C4] mt-0.5">⏱️</span>
-              <span className="text-gray-300 text-sm leading-relaxed">
-                The process may take a few minutes to complete
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
+
+      {/* Bridging Modal */}
+      <ProcessModal
+        isOpen={showBridgeModal}
+        steps={bridgingSteps}
+        currentStep={currentBridgingStep}
+        error={bridgingModalError}
+        onClose={bridgingModalError ? handleCloseBridgeModal : undefined}
+        title="Bridging Your NFT"
+        subtitle="This will take a moment..."
+      />
     </div>
   );
 };

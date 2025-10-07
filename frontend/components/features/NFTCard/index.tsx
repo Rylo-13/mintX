@@ -9,6 +9,8 @@ import { RingLoader } from "react-spinners";
 
 import Image from "next/image";
 import OpenSeaIcon from "@/components/ui/Icons/OpenseaIcon";
+import EthereumIcon from "@/components/ui/Icons/EthereumIcon";
+import AvalancheIcon from "@/components/ui/Icons/AvalancheIcon";
 
 interface NFTCardProps {
   imageUrl: string;
@@ -18,6 +20,7 @@ interface NFTCardProps {
   transactionHash: string;
   contractAddress: string;
   tokenId: string;
+  chainId?: number;
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({
@@ -28,6 +31,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   transactionHash,
   contractAddress,
   tokenId,
+  chainId,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -215,6 +219,18 @@ const NFTCard: React.FC<NFTCardProps> = ({
     return "top";
   };
 
+  const getChainIcon = () => {
+    // Sepolia (Ethereum testnet)
+    if (chainId === 11155111) {
+      return <EthereumIcon />;
+    }
+    // Fuji (Avalanche testnet)
+    if (chainId === 43113) {
+      return <AvalancheIcon />;
+    }
+    return null;
+  };
+
   return (
     <div
       className={styles.cardContainer}
@@ -234,6 +250,9 @@ const NFTCard: React.FC<NFTCardProps> = ({
           className={`${styles.cardSide} ${styles.cardFront}`}
           ref={frontRef}
         >
+          <div className="absolute top-4 right-4 z-10">
+            {getChainIcon()}
+          </div>
           <h3 className={styles.title}>{nftName}</h3>
           <Image
             src={imageUrl}

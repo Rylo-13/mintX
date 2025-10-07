@@ -1,6 +1,4 @@
 import React from "react";
-import XIcon from "../Icons/XIcon";
-import AddIcon from "../Icons/AddIcon";
 
 interface Attribute {
   key: string;
@@ -21,7 +19,9 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
   onClose,
 }) => {
   const handleAddAttribute = () => {
-    setAttributes([...attributes, { key: "", value: "" }]);
+    if (attributes.length < 6) {
+      setAttributes([...attributes, { key: "", value: "" }]);
+    }
   };
 
   const handleDeleteAttribute = (index: number) => {
@@ -43,63 +43,105 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-black p-6 rounded shadow-lg w-full max-w-md relative border flex flex-col">
-        <XIcon
-          className="h-6 w-6 absolute top-2 right-2 cursor-pointer"
-          onClick={onClose}
-        />
-        <h3 className="text-lg font-medium mb-4">Attributes</h3>
+    <div className="fixed inset-0 flex items-start justify-center bg-black/80 backdrop-blur-sm z-50 p-4 pt-20 overflow-y-auto">
+      <div className="bg-[#1A1A1A] rounded-3xl w-full max-w-xl border border-white/10 mb-8">
+        {/* Header */}
+        <div className="p-6 pb-5">
+          <h3 className="text-2xl font-light text-white tracking-tight mb-2">
+            Add Properties
+          </h3>
+          <p className="text-xs text-gray-400 font-light leading-relaxed">
+            Properties are key-value pairs that you can use for your NFT
+            utilities. You can set multiple properties for your NFT.
+          </p>
+        </div>
 
-        <div className="flex-grow">
-          {" "}
-          {/* Allows content to push the bottom of the modal */}
-          {attributes.map((attribute, index) => (
-            <div key={index} className="flex mb-3">
-              <div className="flex w-full gap-x-3 relative">
+        {/* Content */}
+        <div className="px-6">
+          {/* Column Headers */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="text-xs text-gray-400 font-light">Type</label>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 font-light">Name</label>
+            </div>
+          </div>
+
+          {/* Attribute Rows */}
+          <div className="space-y-2.5">
+            {attributes.map((attribute, index) => (
+              <div key={index} className="grid grid-cols-2 gap-3 items-center">
                 <input
-                  className="w-1/2 px-3 py-1.5 border"
+                  className="px-3 py-2 bg-transparent border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
                   type="text"
                   placeholder="Key"
                   value={attribute.key}
                   onChange={(e) =>
                     handleAttributeChange(index, "key", e.target.value)
                   }
+                  maxLength={12}
                 />
-                <input
-                  className="w-1/2 px-3 py-1.5 border"
-                  type="text"
-                  placeholder="Value"
-                  value={attribute.value}
-                  onChange={(e) =>
-                    handleAttributeChange(index, "value", e.target.value)
-                  }
-                />
-                {index > 0 && (
-                  <XIcon
-                    className="h-8 w-8 cursor-pointer absolute top-0 right-0.5 mt-0.5 lg:mt-1 text-white hover:text-[#a81010]"
-                    onClick={() => handleDeleteAttribute(index)}
+                <div className="flex gap-2 items-center">
+                  <input
+                    className="flex-1 px-3 py-2 bg-transparent border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                    type="text"
+                    placeholder="Value"
+                    value={attribute.value}
+                    onChange={(e) =>
+                      handleAttributeChange(index, "value", e.target.value)
+                    }
+                    maxLength={12}
                   />
-                )}
+                  <button
+                    className="hover:bg-white/5 rounded-full transition-colors flex-shrink-0 w-8 h-8 flex items-center justify-center"
+                    onClick={() => handleDeleteAttribute(index)}
+                  >
+                    <svg
+                      className="w-4 h-4 text-gray-400 hover:text-white transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="flex justify-center mt-4">
-          <AddIcon
-            className="h-8 w-8 cursor-pointer hover:text-[#D600C4]"
-            onClick={handleAddAttribute}
-          />
-        </div>
-
-        {/* Confirm Button */}
-        <div className="flex justify-center mt-4">
           <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className={`mt-4 py-2 px-5 border border-white/10 rounded-full text-xs transition-colors font-light ${
+              attributes.length >= 6
+                ? "text-gray-600 cursor-not-allowed"
+                : "text-[#FF10F0] hover:bg-[#FF10F0]/10"
+            }`}
+            onClick={handleAddAttribute}
+            disabled={attributes.length >= 6}
+          >
+            Add More {attributes.length >= 6 && "(Max 6)"}
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 pt-5 grid grid-cols-2 gap-3">
+          <button
+            className="py-2.5 px-6 border border-white/10 rounded-full text-sm text-white hover:bg-white/5 transition-colors font-light"
             onClick={onClose}
           >
-            Confirm
+            Cancel
+          </button>
+          <button
+            className="py-2.5 px-6 bg-[#FF10F0] hover:bg-[#E935C1] text-white text-sm rounded-full transition-colors font-light"
+            onClick={onClose}
+          >
+            Save
           </button>
         </div>
       </div>

@@ -2,7 +2,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import RippleButton from "@/components/ui/Buttons/RippleButton";
-import Image from "next/image";
 
 const Home: React.FC = () => {
   const navigate = useRouter();
@@ -12,38 +11,31 @@ const Home: React.FC = () => {
   };
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center welcomeContent">
-      <Image
-        src="/distorted3.svg"
-        alt="Abstract background pattern"
-        fill
-        quality={100}
-        priority
-        className="object-cover z-0 opacity-90"
-      />
-      <section className="z-10 max-w-4xl mx-auto text-center bg-black/80 backdrop-blur-sm p-8 md:p-16 rounded-lg shadow-2xl">
-        <header>
-          <h1 className="text-4xl md:text-5xl font-bold mb-8 text-[#FF10F0]">
-            Welcome To MintX
-          </h1>
-        </header>
-        <div className="space-y-6 mb-10">
-          <p className="text-lg md:text-xl font-light text-white leading-relaxed">
-            Unleash your creativity by uploading your own art or generate unique
-            pieces with the help of AI.
-          </p>
-          <p className="text-lg md:text-xl font-light text-white leading-relaxed">
-            Turn your creations into NFTs and enjoy the freedom of transferring
-            them across multiple blockchains.
-          </p>
+    <main className="relative flex items-center justify-center" style={{ height: 'calc(100vh - 5rem)' }}>
+      <div className="z-10 w-full max-w-2xl mx-auto px-4">
+        <div className="bg-[#1A1A1A] rounded-3xl p-10 md:p-14 shadow-xl border border-white/10">
+          <header className="mb-10">
+            <h1 className="text-5xl md:text-6xl font-light mb-5 text-white tracking-tight">
+              Welcome to MintX
+            </h1>
+            <p className="text-base text-gray-400 leading-relaxed mb-3 font-light">
+              Unleash your creativity by uploading your own art or generate unique
+              pieces with the help of AI.
+            </p>
+            <p className="text-base text-gray-400 leading-relaxed font-light">
+              Turn your creations into NFTs and enjoy the freedom of transferring
+              them across multiple blockchains.
+            </p>
+          </header>
+
+          <RippleButton
+            text="Get Started"
+            active
+            onClick={handleNavigate}
+            className="w-full text-sm py-2.5 font-light"
+          />
         </div>
-        <RippleButton 
-          text="Enter" 
-          active 
-          onClick={handleNavigate}
-          className="text-lg px-8 py-3"
-        />
-      </section>
+      </div>
     </main>
   );
 };

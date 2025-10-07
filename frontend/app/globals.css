@@ -13,7 +13,7 @@
 }
 
 body {
-  @apply bg-black text-white;
+  @apply bg-[#0D0D0D] text-white;
 }
 
 @media (min-width: 600px) {
@@ -23,7 +23,7 @@ body {
 }
 
 .welcomeContent {
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 5rem);
   overflow: hidden;
 }
 
@@ -33,15 +33,12 @@ body {
   }
 
   .btn-prim {
-    @apply bg-[#D600C4] rounded text-white font-normal px-12 py-2 hover:bg-[#FF10F0] focus:outline-none;
+    @apply bg-[#FF10F0] rounded-xl text-white font-light text-sm px-8 py-2 hover:bg-[#E935C1] focus:outline-none transition-colors;
   }
   .btn-inactive {
-    @apply rounded-md text-gray-500 font-normal px-12 py-2 focus:outline-none;
+    @apply rounded-xl text-gray-500 font-light text-sm px-8 py-2 focus:outline-none bg-transparent hover:bg-white/5 transition-colors;
   }
   .disabled {
-    @apply bg-[#86007d] hover:bg-none rounded-md font-normal px-12 py-2 focus:outline-none;
-  }
-  .border {
-    @apply border-[0.1px] border-gray-500 rounded;
+    @apply bg-[#1A1A1A] hover:bg-[#1A1A1A] rounded-xl font-light text-sm px-8 py-2 focus:outline-none cursor-not-allowed text-gray-400;
   }
 }

@@ -7,6 +7,14 @@ export async function POST(req: NextRequest) {
   try {
     const { aiImageDescription } = await req.json();
 
+    // Basic validation to prevent abuse
+    if (!aiImageDescription || typeof aiImageDescription !== 'string' || aiImageDescription.trim().length === 0 || aiImageDescription.length > 1000) {
+      return NextResponse.json(
+        { error: "Invalid request" },
+        { status: 400 }
+      );
+    }
+
     // Validate API key
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -40,27 +48,26 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("OpenAI API error:", errorData);
+      // Log full error details server-side for debugging
+      console.error("OpenAI API error:", JSON.stringify(errorData));
+
+      // Return generic error to client (no internal details)
       return NextResponse.json(
-        {
-          error: "Failed to generate image",
-          details: errorData.error?.message || "Unknown OpenAI error",
-          status: response.status
-        },
-        { status: response.status }
+        { error: "Failed to generate image. Please try again." },
+        { status: 500 }
       );
     }
 
     const responseData = await response.json();
 
     return NextResponse.json({ imageUrl: responseData.data[0].url });
-  } catch (error: any) {
-    console.error("Error generating image:", error?.message || error);
+  } catch (error: unknown) {
+    // Log full error server-side (stack trace, details, etc.)
+    console.error("Error generating image:", error instanceof Error ? error.message : String(error));
+
+    // Return generic error to client
     return NextResponse.json(
-      {
-        error: "Failed to generate image",
-        details: error?.message || "Unknown error"
-      },
+      { error: "An error occurred. Please try again." },
       { status: 500 }
     );
   }

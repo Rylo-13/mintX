@@ -31,13 +31,17 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error("Error pinning JSON to IPFS:", error?.response?.data || error?.message || error);
+  } catch (error: unknown) {
+    // Log full error details server-side
+    if (axios.isAxiosError(error)) {
+      console.error("Error pinning JSON to IPFS:", error.response?.data || error.message);
+    } else {
+      console.error("Error pinning JSON to IPFS:", error instanceof Error ? error.message : String(error));
+    }
+
+    // Return generic error to client
     return NextResponse.json(
-      {
-        error: "Error pinning JSON to IPFS",
-        details: error?.response?.data?.error || error?.message
-      },
+      { error: "Failed to upload metadata. Please try again." },
       { status: 500 }
     );
   }

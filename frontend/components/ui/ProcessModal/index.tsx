@@ -6,7 +6,7 @@ import { RingLoader } from "react-spinners";
 import CheckIcon from "../Icons/CheckIcon";
 import ErrorIcon from "../Icons/ErrorIcon";
 import PendingIcon from "../Icons/PendingIcon";
-import InfoIcon from "../Icons/InfoIcon";
+import AlertIcon from "../Icons/AlertIcon";
 import { getErrorMessage } from "@/utils/errorHandler";
 
 interface ProcessStep {
@@ -79,12 +79,8 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {title}
-              </h2>
-              <p className="text-gray-400 text-sm">
-                {subtitle}
-              </p>
+              <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
+              <p className="text-gray-400 text-sm">{subtitle}</p>
             </div>
 
             <div className="space-y-3">
@@ -104,9 +100,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
                       : "bg-gray-800/20"
                   }`}
                 >
-                  <div className="flex-shrink-0">
-                    {getStepIcon(step)}
-                  </div>
+                  <div className="flex-shrink-0">{getStepIcon(step)}</div>
                   <div className="flex-1">
                     <h3 className={`font-medium ${getStepTextColor(step)}`}>
                       {step.title}
@@ -123,9 +117,13 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
                 className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
               >
                 <div className="flex items-start space-x-3">
-                  <InfoIcon />
+                  <div className="text-red-400">
+                    <AlertIcon />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-red-400 text-sm font-medium mb-1">Transaction Failed</p>
+                    <p className="text-red-400 text-sm font-medium mb-1">
+                      Transaction Failed
+                    </p>
                     <p className="text-red-300/80 text-xs font-light leading-relaxed">
                       {getErrorMessage(error)}
                     </p>
@@ -138,7 +136,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
               <div className="mt-6 flex justify-center">
                 <button
                   onClick={onClose}
-                  className="py-2.5 px-8 border border-white/10 rounded-full text-sm text-white hover:bg-white/5 transition-colors font-light"
+                  className="py-2.5 px-14 border border-white/10 rounded-full text-sm text-white hover:bg-white/5 transition-colors font-light"
                 >
                   Close
                 </button>

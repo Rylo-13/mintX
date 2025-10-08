@@ -118,13 +118,6 @@ const ImageUploader: React.FC = () => {
         return;
       }
 
-      // Warning for small file sizes
-      if (selectedFile.size < 100 * 1024) {
-        setImageWarning("Image is smaller than 100KB. This may result in low resolution when displayed on marketplaces.");
-      } else {
-        setImageWarning("");
-      }
-
       setSelectedImage(selectedFile);
       setUploadedImageUrl(URL.createObjectURL(selectedFile));
       setImageError("");
@@ -212,10 +205,13 @@ const ImageUploader: React.FC = () => {
     resetMintingSteps();
     setMintingError(null);
 
+    let currentStep = "";
+
     try {
       // Step 1: Upload to IPFS (combines image and metadata upload)
-      setCurrentMintingStep("upload");
-      updateStepStatus("upload", "loading");
+      currentStep = "upload";
+      setCurrentMintingStep(currentStep);
+      updateStepStatus(currentStep, "loading");
 
       const imageBuffer = generatedImageUrl
         ? await (
@@ -273,8 +269,9 @@ const ImageUploader: React.FC = () => {
       console.log("Network ID:", chain?.id);
 
       // Step 2: Mint NFT transaction
-      setCurrentMintingStep("mint");
-      updateStepStatus("mint", "loading");
+      currentStep = "mint";
+      setCurrentMintingStep(currentStep);
+      updateStepStatus(currentStep, "loading");
 
       const transactionHash = await writeContractAsync({
         abi: mxABIsepolia,
@@ -284,11 +281,12 @@ const ImageUploader: React.FC = () => {
       });
 
       console.log("Transaction Hash:", transactionHash);
-      updateStepStatus("mint", "completed");
+      updateStepStatus(currentStep, "completed");
 
       // Step 3: Wait for confirmation
-      setCurrentMintingStep("confirm");
-      updateStepStatus("confirm", "loading");
+      currentStep = "confirm";
+      setCurrentMintingStep(currentStep);
+      updateStepStatus(currentStep, "loading");
 
       const receipt = await waitForTransactionReceipt(config, {
         hash: transactionHash,
@@ -320,6 +318,8 @@ const ImageUploader: React.FC = () => {
       setTimeout(() => {
         setShowMintingModal(false);
         setIsCompleted(true);
+        setCurrentMintingStep(null);
+        setIsMinting(false);
       }, 1000);
 
       console.log("Transaction Hash:", transactionHash);
@@ -329,13 +329,12 @@ const ImageUploader: React.FC = () => {
       setMintError(errorMessage);
       setMintingError(errorMessage);
 
-      // Mark current step as error
-      if (currentMintingStep) {
-        updateStepStatus(currentMintingStep, "error");
+      if (currentStep) {
+        console.log("Setting step to error:", currentStep);
+        updateStepStatus(currentStep, "error");
       }
-    } finally {
+
       setIsMinting(false);
-      setCurrentMintingStep(null);
     }
   };
 
@@ -344,6 +343,8 @@ const ImageUploader: React.FC = () => {
 
     setIsGenerating(true);
     setImageLoaded(false);
+    setIsGeneratedImageUrl(null);
+    setImageError("");
 
     try {
       const response = await axios.post(

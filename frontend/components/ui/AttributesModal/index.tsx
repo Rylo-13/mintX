@@ -80,7 +80,7 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
                   onChange={(e) =>
                     handleAttributeChange(index, "key", e.target.value)
                   }
-                  maxLength={12}
+                  maxLength={9}
                 />
                 <div className="flex gap-2 items-center">
                   <input
@@ -91,7 +91,7 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
                     onChange={(e) =>
                       handleAttributeChange(index, "value", e.target.value)
                     }
-                    maxLength={12}
+                    maxLength={9}
                   />
                   <button
                     className="hover:bg-white/5 rounded-full transition-colors flex-shrink-0 w-8 h-8 flex items-center justify-center"

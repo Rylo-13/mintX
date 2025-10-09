@@ -1,7 +1,7 @@
 .cardContainer {
   perspective: 1000px;
-  width: 320px;
-  height: 474px;
+  width: 340px;
+  height: 480px;
   margin: auto;
   user-select: none;
   position: relative;
@@ -29,7 +29,7 @@
 }
 
 .cardFront {
-  background: #1A1A1A;
+  background: #1a1a1a;
   color: white;
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@
 }
 
 .cardBack {
-  background: #1A1A1A;
+  background: #1a1a1a;
   color: white;
   transform: rotateY(180deg);
   display: flex;

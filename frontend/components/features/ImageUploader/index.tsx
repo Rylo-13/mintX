@@ -106,9 +106,17 @@ const ImageUploader: React.FC = () => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
     if (selectedFile) {
       // Validate file type - only accept common image formats
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!allowedTypes.includes(selectedFile.type)) {
-        setImageError("Invalid file type. Please upload JPG, PNG, GIF, or WebP images only.");
+        setImageError(
+          "Invalid file type. Please upload JPG, PNG, GIF, or WebP images only."
+        );
         return;
       }
 
@@ -407,7 +415,7 @@ const ImageUploader: React.FC = () => {
               animate={{
                 height: isGeneratedTab ? 40 : 0,
                 marginBottom: isGeneratedTab ? 16 : 0,
-                opacity: isGeneratedTab ? 1 : 0
+                opacity: isGeneratedTab ? 1 : 0,
               }}
               initial={false}
               transition={{ duration: 0.3 }}
@@ -452,7 +460,9 @@ const ImageUploader: React.FC = () => {
                 <input
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                  className={`absolute inset-0 opacity-0 cursor-pointer ${showMintingModal ? 'pointer-events-none' : 'z-10'}`}
+                  className={`absolute inset-0 opacity-0 cursor-pointer ${
+                    showMintingModal ? "pointer-events-none" : "z-10"
+                  }`}
                   onChange={handleFileInputChange}
                   disabled={showMintingModal}
                 />
@@ -462,7 +472,9 @@ const ImageUploader: React.FC = () => {
                     <p className="text-base mb-1 font-light">
                       Click to upload an image
                     </p>
-                    <p className="text-base font-light mb-3">or drag and drop here</p>
+                    <p className="text-base font-light mb-3">
+                      or drag and drop here
+                    </p>
                     <p className="text-xs text-gray-500 font-light">
                       JPG, PNG, GIF, or WebP • Max 10MB
                     </p>
@@ -489,20 +501,20 @@ const ImageUploader: React.FC = () => {
                           className="absolute -top-3 -right-3 w-8 h-8 bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-full flex items-center justify-center transition-colors border border-white/10 z-20 group"
                           onClick={handleClearImage}
                         >
-                        <svg
-                          className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                          <svg
+                            className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
                       )}
                     </motion.div>
                   </div>
@@ -575,10 +587,20 @@ const ImageUploader: React.FC = () => {
 
             {/* Image Error/Warning Display */}
             {imageError && (
-              <Alert type="error" title="Image Error" message={imageError} className="mt-4" />
+              <Alert
+                type="error"
+                title="Image Error"
+                message={imageError}
+                className="mt-4"
+              />
             )}
             {imageWarning && !imageError && (
-              <Alert type="warning" title="Low Resolution" message={imageWarning} className="mt-4" />
+              <Alert
+                type="warning"
+                title="Low Resolution"
+                message={imageWarning}
+                className="mt-4"
+              />
             )}
           </div>
 
@@ -604,7 +626,7 @@ const ImageUploader: React.FC = () => {
                 value={nftDescription}
                 onChange={(e) => setNFTDescription(e.target.value)}
                 rows={4}
-                maxLength={130}
+                maxLength={118}
               />
             </div>
 
@@ -633,7 +655,8 @@ const ImageUploader: React.FC = () => {
                 </button>
               </div>
 
-              {attributes.filter((attr) => attr.key && attr.value).length > 0 ? (
+              {attributes.filter((attr) => attr.key && attr.value).length >
+              0 ? (
                 <div className="flex flex-wrap gap-2">
                   {attributes
                     .filter((attr) => attr.key && attr.value)
@@ -689,7 +712,12 @@ const ImageUploader: React.FC = () => {
             />
 
             {mintError && (
-              <Alert type="error" title="Minting Error" message={mintError} className="mt-4" />
+              <Alert
+                type="error"
+                title="Minting Error"
+                message={mintError}
+                className="mt-4"
+              />
             )}
           </div>
         </div>

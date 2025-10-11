@@ -635,24 +635,27 @@ const ImageUploader: React.FC = () => {
                 <label className="text-xs text-gray-400 font-light">
                   Properties (Optional)
                 </label>
-                <button
-                  className="text-[#FF10F0] hover:text-[#E935C1] text-xs font-light flex items-center gap-1 transition-colors"
-                  onClick={() => setIsAttributesModalOpen(true)}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {attributes.filter((attr) => attr.key && attr.value).length >
+                  0 && (
+                  <button
+                    className="text-[#FF10F0] hover:text-[#E935C1] flex items-center gap-1 transition-colors"
+                    onClick={() => setIsAttributesModalOpen(true)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
 
               {attributes.filter((attr) => attr.key && attr.value).length >

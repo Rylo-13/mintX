@@ -114,20 +114,32 @@ const Navbar = () => {
       <div className="drawer-content h-full">
         <div className="container mx-auto max-w-7xl px-4 md:px-8 lg:px-12 h-full flex items-center justify-between">
           <div className="flex items-center gap-12">
-            <label
-              htmlFor="my-drawer"
-              className="drawer-button items-center text-2xl lg:hidden cursor-pointer z-30 hover:text-white transition-colors text-gray-400"
-            >
-              ☰
-            </label>
-
             {/* Logo and Nav Links */}
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-3">
               <Link href="/" className="hover:scale-105 transition-transform">
                 <MintXIcon className="w-9 h-9" />
               </Link>
 
-              <ul className="hidden lg:flex items-center gap-6 text-base font-normal">
+              <label
+                htmlFor="my-drawer"
+                className="drawer-button lg:hidden cursor-pointer hover:text-white transition-colors text-gray-400"
+              >
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </label>
+
+              <ul className="hidden lg:flex items-center gap-6 text-base font-normal ml-5">
                 <li>
                   <Link
                     href="/mint"
@@ -164,20 +176,38 @@ const Navbar = () => {
           <ConnectButtonWrapper />
         </div>
       </div>
-      <div className="drawer-side z-20">
+      <div className="drawer-side z-40">
         <label
           htmlFor="my-drawer"
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <div className="bg-[#0D0D0D] min-h-full w-2/3 border-r border-white/10">
-          <div className="p-6 border-b border-white/10">
+        <div className="bg-[#0D0D0D] min-h-full w-2/3 border-r border-white/10 relative z-50">
+          <div className="p-6 border-b border-white/10 flex items-center justify-between">
             <Link
               href="/"
               className="inline-flex hover:scale-105 transition-transform"
             >
               <MintXIcon className="w-9 h-9" />
             </Link>
+            <label
+              htmlFor="my-drawer"
+              className="cursor-pointer text-gray-400 hover:text-white transition-colors"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </label>
           </div>
           <ul className="menu text-base-content p-6 space-y-1">
             <li>

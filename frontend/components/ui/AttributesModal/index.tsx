@@ -73,7 +73,7 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
             {attributes.map((attribute, index) => (
               <div key={index} className="grid grid-cols-2 gap-3 items-center">
                 <input
-                  className="px-3 py-2 bg-transparent border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                  className="px-3 py-2 bg-transparent border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
                   type="text"
                   placeholder="Key"
                   value={attribute.key}
@@ -84,7 +84,7 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
                 />
                 <div className="flex gap-2 items-center">
                   <input
-                    className="flex-1 px-3 py-2 bg-transparent border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                    className="flex-1 px-3 py-2 bg-transparent border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
                     type="text"
                     placeholder="Value"
                     value={attribute.value}

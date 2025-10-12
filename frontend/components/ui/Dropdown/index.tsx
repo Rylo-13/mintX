@@ -51,7 +51,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     <div ref={dropdownRef} className={`relative ${className}`}>
       <button
         type="button"
-        className={`w-full px-3 py-2 border border-white/10 rounded-xl bg-[#0D0D0D] text-sm text-white text-left transition-colors font-light flex items-center justify-between ${
+        className={`w-full px-3 py-2 border border-white/10 rounded-2xl bg-[#0D0D0D] text-sm text-white text-left transition-colors font-light flex items-center justify-between ${
           disabled
             ? "cursor-not-allowed opacity-50"
             : "cursor-pointer hover:border-[#FF10F0] focus:border-[#FF10F0] focus:outline-none"
@@ -80,7 +80,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-2 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-2 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
           {options.length === 0 ? (
             <div className="px-3 py-2 text-sm text-gray-500 font-light">
               No options available

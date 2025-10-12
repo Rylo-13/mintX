@@ -74,7 +74,9 @@ const BridgeNFT: React.FC = () => {
   const [currentBridgingStep, setCurrentBridgingStep] = useState<string | null>(
     null
   );
-  const [bridgingModalError, setBridgingModalError] = useState<string | null>(null);
+  const [bridgingModalError, setBridgingModalError] = useState<string | null>(
+    null
+  );
   const [nfts, setNfts] = useState<
     {
       value: string;
@@ -515,12 +517,12 @@ const BridgeNFT: React.FC = () => {
           fetchNFTs();
         }, 5000);
       }, 1000);
-
     } catch (error) {
       console.error("Error during bridging:", error);
-      const errorMessage = error instanceof Error
-        ? `Bridging failed: ${error.message}`
-        : "Bridging failed: An unknown error occurred.";
+      const errorMessage =
+        error instanceof Error
+          ? `Bridging failed: ${error.message}`
+          : "Bridging failed: An unknown error occurred.";
 
       setBridgeError(errorMessage);
       setBridgingModalError(errorMessage);
@@ -639,11 +641,7 @@ const BridgeNFT: React.FC = () => {
       )}
 
       {bridgeStatus && (
-        <Alert
-          type="success"
-          message={bridgeStatus}
-          className="mb-6"
-        />
+        <Alert type="success" message={bridgeStatus} className="mb-6" />
       )}
 
       {/* Pending URI Restoration Section */}
@@ -662,7 +660,7 @@ const BridgeNFT: React.FC = () => {
             {pendingURIs.map((pendingURI) => (
               <div
                 key={pendingURI.tokenId}
-                className="bg-[#0D0D0D] rounded-xl border border-white/10 p-5"
+                className="bg-[#0D0D0D] rounded-2xl border border-white/10 p-5"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -670,12 +668,15 @@ const BridgeNFT: React.FC = () => {
                       NFT #{pendingURI.tokenId}
                     </div>
                     <div className="text-xs text-gray-400 font-light">
-                      Bridged from {pendingURI.sourceChain === 11155111 ? "Sepolia" : "Fuji"}
+                      Bridged from{" "}
+                      {pendingURI.sourceChain === 11155111 ? "Sepolia" : "Fuji"}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-[#FF10F0] rounded-full animate-pulse"></div>
-                    <span className="text-xs text-gray-400 font-light">Ready</span>
+                    <span className="text-xs text-gray-400 font-light">
+                      Ready
+                    </span>
                   </div>
                 </div>
 
@@ -691,12 +692,13 @@ const BridgeNFT: React.FC = () => {
           </div>
 
           <div className="px-6 pb-6">
-            <div className="p-4 bg-[#0D0D0D] rounded-xl border border-white/10">
+            <div className="p-4 bg-[#0D0D0D] rounded-2xl border border-white/10">
               <div className="flex items-start gap-3">
                 <InfoIcon />
                 <div className="text-xs text-gray-400 font-light leading-relaxed">
-                  <span className="text-white font-normal">Note:</span> Bridging takes 1-5 minutes.
-                  If the restore button doesn't work immediately, please wait a moment and try again.
+                  <span className="text-white font-normal">Note:</span> Bridging
+                  takes 1-5 minutes. If the restore button doesn't work
+                  immediately, please wait a moment and try again.
                 </div>
               </div>
             </div>
@@ -718,11 +720,15 @@ const BridgeNFT: React.FC = () => {
             <Dropdown
               options={nfts.map((nft) => ({
                 value: nft.value,
-                label: `${nft.label} (ID: ${nft.value})${!nft.hasURI ? " ⚠️ No Metadata" : ""}`,
+                label: `${nft.label} (ID: ${nft.value})${
+                  !nft.hasURI ? " ⚠️ No Metadata" : ""
+                }`,
               }))}
               value={selectedTokenId}
               onChange={(value) => setSelectedTokenId(Number(value))}
-              placeholder={nfts.length === 0 ? "No NFTs available" : "Choose an NFT..."}
+              placeholder={
+                nfts.length === 0 ? "No NFTs available" : "Choose an NFT..."
+              }
               disabled={isBridging}
             />
           </div>
@@ -754,7 +760,7 @@ const BridgeNFT: React.FC = () => {
                 NFT Name
               </label>
               <input
-                className="w-full px-3 py-2 bg-[#0D0D0D] border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                className="w-full px-3 py-2 bg-[#0D0D0D] border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
                 type="text"
                 value={selectedNFT?.label || ""}
                 disabled
@@ -766,7 +772,7 @@ const BridgeNFT: React.FC = () => {
                 Token ID
               </label>
               <input
-                className="w-full px-3 py-2 bg-[#0D0D0D] border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                className="w-full px-3 py-2 bg-[#0D0D0D] border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
                 type="text"
                 value={selectedNFT?.value || ""}
                 disabled
@@ -828,7 +834,7 @@ const BridgeNFT: React.FC = () => {
               active
             />
             {isBridging && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-2xl">
                 <div className="flex items-center space-x-3">
                   <RingLoader color="#FF10F0" size={24} />
                   <span className="text-white font-light">Processing...</span>

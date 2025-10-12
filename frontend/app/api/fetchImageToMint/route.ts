@@ -3,8 +3,8 @@ import axios from "axios";
 
 // Whitelist of allowed domains for SSRF protection
 const ALLOWED_DOMAINS = [
-  'oaidalleapiprodscus.blob.core.windows.net', // OpenAI DALL-E
-  'gold-bizarre-wildebeest-656.mypinata.cloud', // Private Pinata IPFS gateway
+  "oaidalleapiprodscus.blob.core.windows.net",
+  "gold-bizarre-wildebeest-656.mypinata.cloud",
 ];
 
 export async function GET(request: Request) {
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const url = new URL(imageUrl);
 
     // Only allow HTTPS
-    if (url.protocol !== 'https:') {
+    if (url.protocol !== "https:") {
       return NextResponse.json(
         { error: "Only HTTPS URLs are allowed" },
         { status: 400 }
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     }
 
     // Check if domain is whitelisted
-    const isAllowed = ALLOWED_DOMAINS.some(domain => url.hostname === domain);
+    const isAllowed = ALLOWED_DOMAINS.some((domain) => url.hostname === domain);
     if (!isAllowed) {
       return NextResponse.json(
         { error: "Domain not allowed" },
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 
     // Validate content type is an image
     const contentType = response.headers["content-type"];
-    if (!contentType || !contentType.startsWith('image/')) {
+    if (!contentType || !contentType.startsWith("image/")) {
       return NextResponse.json(
         { error: "URL must return an image" },
         { status: 400 }
@@ -64,11 +64,8 @@ export async function GET(request: Request) {
     console.error("Error fetching image:", error);
 
     // Don't expose internal error details
-    if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
-      return NextResponse.json(
-        { error: "Request timeout" },
-        { status: 408 }
-      );
+    if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
+      return NextResponse.json({ error: "Request timeout" }, { status: 408 });
     }
 
     return NextResponse.json(

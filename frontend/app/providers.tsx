@@ -14,7 +14,23 @@ type Props = {
 
 export function Providers({ children, initialState }: Props) {
   const [config] = useState(() => getConfig());
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            // Wagmi's official recommendation for blockchain data
+            gcTime: 1_000 * 60 * 60 * 24, // 24 hours
+            // Reasonable staleTime for NFT data
+            staleTime: 1_000 * 60 * 5, // 5 minutes
+            // Retry failed requests (good for IPFS)
+            retry: 2,
+            // Don't refetch on window focus for NFT data
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
 
   return (
     <WagmiProvider config={config} initialState={initialState}>
@@ -27,7 +43,7 @@ export function Providers({ children, initialState }: Props) {
           theme={darkTheme({
             accentColor: "#D600C4",
             accentColorForeground: "white",
-            borderRadius: "medium",
+            borderRadius: "large",
             overlayBlur: "small",
           })}
         >

@@ -10,7 +10,12 @@ interface AlertProps {
   className?: string;
 }
 
-const Alert: React.FC<AlertProps> = ({ type, title, message, className = "" }) => {
+const Alert: React.FC<AlertProps> = ({
+  type,
+  title,
+  message,
+  className = "",
+}) => {
   const getStyles = () => {
     switch (type) {
       case "error":
@@ -51,7 +56,9 @@ const Alert: React.FC<AlertProps> = ({ type, title, message, className = "" }) =
   const styles = getStyles();
 
   return (
-    <div className={`p-4 ${styles.bg} rounded-xl border ${styles.border} ${className}`}>
+    <div
+      className={`p-4 ${styles.bg} rounded-2xl border ${styles.border} ${className}`}
+    >
       <div className="flex items-start gap-3">
         {styles.icon}
         <div className="flex-1">
@@ -60,7 +67,9 @@ const Alert: React.FC<AlertProps> = ({ type, title, message, className = "" }) =
               {title}
             </p>
           )}
-          <p className={`${styles.messageColor} text-xs font-light leading-relaxed`}>
+          <p
+            className={`${styles.messageColor} text-xs font-light leading-relaxed`}
+          >
             {message}
           </p>
         </div>

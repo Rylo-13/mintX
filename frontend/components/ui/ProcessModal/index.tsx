@@ -75,7 +75,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-xl p-8 max-w-md w-full shadow-2xl relative z-[101]"
+            className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl relative z-[101]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-8">
@@ -90,7 +90,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 ${
+                  className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-300 ${
                     step.status === "loading"
                       ? "bg-[#D600C4]/10"
                       : step.status === "completed"
@@ -114,7 +114,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
+                className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl"
               >
                 <div className="flex items-start space-x-3">
                   <div className="text-red-400">

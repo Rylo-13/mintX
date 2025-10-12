@@ -14,6 +14,7 @@ import Image from "next/image";
 import AttributesModal from "@/components/ui/AttributesModal";
 import Alert from "@/components/ui/Alert";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { getIPFSUrl } from "@/utils/ipfs";
 
 const ImageUploader: React.FC = () => {
   const { isConnected, chain } = useAccount();
@@ -249,7 +250,7 @@ const ImageUploader: React.FC = () => {
       );
 
       const imageHash = pinFileResponse.data.IpfsHash;
-      const imageURI = `https://gateway.pinata.cloud/ipfs/${imageHash}`;
+      const imageURI = getIPFSUrl(imageHash);
       setUploadedImageUrl(imageURI);
 
       const filteredAttributes = attributes.filter(
@@ -269,7 +270,7 @@ const ImageUploader: React.FC = () => {
         },
       });
 
-      const metadataURI = `https://gateway.pinata.cloud/ipfs/${pinJSONResponse.data.IpfsHash}`;
+      const metadataURI = getIPFSUrl(pinJSONResponse.data.IpfsHash);
       updateStepStatus("upload", "completed");
 
       console.log("Contract Address:", sepoliaCA);

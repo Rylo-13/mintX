@@ -19,6 +19,7 @@ import ProcessModal from "../../ui/ProcessModal";
 import InfoIcon from "../../ui/Icons/InfoIcon";
 import Alert from "../../ui/Alert";
 import { getErrorMessage } from "../../../utils/errorHandler";
+import { getIPFSUrl } from "@/utils/ipfs";
 
 interface MessagingFee {
   nativeFee: bigint;
@@ -296,12 +297,7 @@ const BridgeNFT: React.FC = () => {
 
             if (hasURI) {
               try {
-                let resolvedTokenURI = tokenURI;
-                if (tokenURI.startsWith("ipfs://")) {
-                  resolvedTokenURI = `https://ipfs.io/ipfs/${tokenURI.substring(
-                    7
-                  )}`;
-                }
+                const resolvedTokenURI = getIPFSUrl(tokenURI);
 
                 const response = await fetch(resolvedTokenURI);
                 if (response.ok) {
@@ -310,9 +306,7 @@ const BridgeNFT: React.FC = () => {
 
                   // Get image URL
                   if (metadata.image) {
-                    imageUrl = metadata.image.startsWith("ipfs://")
-                      ? `https://ipfs.io/ipfs/${metadata.image.substring(7)}`
-                      : metadata.image;
+                    imageUrl = getIPFSUrl(metadata.image);
                   }
                 }
               } catch (fetchError) {

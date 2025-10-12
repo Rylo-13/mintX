@@ -4,8 +4,7 @@ import axios from "axios";
 // Whitelist of allowed domains for SSRF protection
 const ALLOWED_DOMAINS = [
   'oaidalleapiprodscus.blob.core.windows.net', // OpenAI DALL-E
-  'gateway.pinata.cloud', // Pinata IPFS gateway
-  'ipfs.io', // IPFS gateway
+  'gold-bizarre-wildebeest-656.mypinata.cloud', // Private Pinata IPFS gateway
 ];
 
 export async function GET(request: Request) {

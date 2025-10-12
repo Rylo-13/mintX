@@ -5,6 +5,7 @@ import SkeletonCard from "@/components/ui/NFTSkeleton";
 import { useAccount, useReadContract, usePublicClient, useConfig } from "wagmi";
 import mintXABIsepolia from "../../config/abi/mintXsepolia.json";
 import mintXABIfuji from "../../config/abi/mintXfuji.json";
+import { getIPFSUrl } from "@/utils/ipfs";
 
 type NFT = {
   tokenId: string;
@@ -93,10 +94,7 @@ const Page: React.FC = () => {
             args: [tokenId],
           })) as string;
 
-          let resolvedTokenURI = tokenURI;
-          if (tokenURI.startsWith("ipfs://")) {
-            resolvedTokenURI = `https://ipfs.io/ipfs/${tokenURI.substring(7)}`;
-          }
+          const resolvedTokenURI = getIPFSUrl(tokenURI);
 
           console.log("Fetching metadata from:", resolvedTokenURI);
 

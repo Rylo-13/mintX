@@ -11,6 +11,7 @@ import Image from "next/image";
 import OpenSeaIcon from "@/components/ui/Icons/OpenseaIcon";
 import EthereumIcon from "@/components/ui/Icons/EthereumIcon";
 import AvalancheIcon from "@/components/ui/Icons/AvalancheIcon";
+import { getIPFSUrl } from "@/utils/ipfs";
 
 interface NFTCardProps {
   imageUrl: string;
@@ -82,7 +83,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
           }
         );
         const ipfsHash = pinataResponse.data.IpfsHash;
-        setQrCodeUrl(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
+        setQrCodeUrl(getIPFSUrl(ipfsHash));
         uploadImageToPinata.current = true;
       } catch (error) {
         console.error("Error uploading to Pinata:", error);

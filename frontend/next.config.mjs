@@ -5,12 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "gateway.pinata.cloud",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "ipfs.io",
+        hostname: "gold-bizarre-wildebeest-656.mypinata.cloud",
         pathname: "/**",
       },
       {
@@ -26,11 +21,6 @@ const nextConfig = {
       use: ["@svgr/webpack"],
     });
     return config;
-  },
-  env: {
-    NEXT_PUBLIC_SEPOLIA_CA: process.env.NEXT_PUBLIC_SEPOLIA_CA,
-    NEXT_PUBLIC_FUJI_CA: process.env.NEXT_PUBLIC_FUJI_CA,
-    NEXT_PUBLIC_ARBITRUM_CA: process.env.NEXT_PUBLIC_ARBITRUM_CA,
   },
 };
 

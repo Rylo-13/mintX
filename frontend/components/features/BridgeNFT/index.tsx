@@ -20,6 +20,7 @@ import InfoIcon from "../../ui/Icons/InfoIcon";
 import Alert from "../../ui/Alert";
 import { getErrorMessage } from "../../../utils/errorHandler";
 import { getIPFSUrl } from "@/utils/ipfs";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 interface MessagingFee {
   nativeFee: bigint;
@@ -826,13 +827,26 @@ const BridgeNFT: React.FC = () => {
           </div>
 
           <div className="pt-3">
-            <RippleButton
-              text={isBridging ? "Bridging..." : "Bridge NFT"}
-              onClick={handleBridgeNFT}
-              disabled={isBridging || !selectedTokenId || !selectedTargetChain}
-              className="w-full text-sm font-light py-2.5"
-              active
-            />
+            <ConnectButton.Custom>
+              {({ openConnectModal }) => (
+                <RippleButton
+                  text={
+                    !isConnected
+                      ? "Connect Wallet"
+                      : isBridging
+                      ? "Bridging..."
+                      : "Bridge NFT"
+                  }
+                  onClick={!isConnected ? openConnectModal : handleBridgeNFT}
+                  disabled={
+                    isConnected &&
+                    (isBridging || !selectedTokenId || !selectedTargetChain)
+                  }
+                  className="w-full text-sm font-light py-2.5"
+                  active
+                />
+              )}
+            </ConnectButton.Custom>
             {isBridging && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-2xl">
                 <div className="flex items-center space-x-3">

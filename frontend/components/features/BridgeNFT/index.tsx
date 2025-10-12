@@ -630,7 +630,7 @@ const BridgeNFT: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl my-8 px-4">
+    <div className="container mx-auto max-w-7xl my-8 px-4 md:px-8 lg:px-12 pb-8">
       {bridgeError && (
         <Alert
           type="error"

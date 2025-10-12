@@ -404,7 +404,7 @@ const ImageUploader: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl my-8 pb-8">
+    <div className="container mx-auto max-w-7xl my-8 pb-8 px-4 md:px-8 lg:px-12">
       {!isCompleted && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Image Upload/Generation */}

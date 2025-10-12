@@ -109,58 +109,60 @@ const Navbar = () => {
   };
 
   return (
-    <div className="drawer sticky top-0 h-20 w-full px-6 md:px-12 lg:px-20 bg-[#0D0D0D] items-center z-30">
+    <div className="drawer sticky top-0 h-20 w-full bg-[#0D0D0D] items-center z-30">
       <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex items-center justify-between h-full">
-        <div className="flex items-center gap-12">
-          <label
-            htmlFor="my-drawer"
-            className="drawer-button items-center text-2xl lg:hidden cursor-pointer z-30 hover:text-white transition-colors text-gray-400"
-          >
-            ☰
-          </label>
+      <div className="drawer-content h-full">
+        <div className="container mx-auto max-w-7xl px-4 md:px-8 lg:px-12 h-full flex items-center justify-between">
+          <div className="flex items-center gap-12">
+            <label
+              htmlFor="my-drawer"
+              className="drawer-button items-center text-2xl lg:hidden cursor-pointer z-30 hover:text-white transition-colors text-gray-400"
+            >
+              ☰
+            </label>
 
-          {/* Logo and Nav Links */}
-          <div className="flex items-center gap-8">
-            <Link href="/" className="hover:scale-105 transition-transform">
-              <MintXIcon className="w-9 h-9" />
-            </Link>
+            {/* Logo and Nav Links */}
+            <div className="flex items-center gap-8">
+              <Link href="/" className="hover:scale-105 transition-transform">
+                <MintXIcon className="w-9 h-9" />
+              </Link>
 
-            <ul className="hidden lg:flex items-center gap-6 text-base font-normal">
-              <li>
-                <Link
-                  href="/mint"
-                  className={`cursor-pointer transition-colors ${isActive(
-                    "/mint"
-                  )}`}
-                >
-                  Mint
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/bridge"
-                  className={`cursor-pointer transition-colors ${isActive(
-                    "/bridge"
-                  )}`}
-                >
-                  Bridge
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/gallery"
-                  className={`cursor-pointer transition-colors ${isActive(
-                    "/gallery"
-                  )}`}
-                >
-                  Gallery
-                </Link>
-              </li>
-            </ul>
+              <ul className="hidden lg:flex items-center gap-6 text-base font-normal">
+                <li>
+                  <Link
+                    href="/mint"
+                    className={`cursor-pointer transition-colors ${isActive(
+                      "/mint"
+                    )}`}
+                  >
+                    Mint
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/bridge"
+                    className={`cursor-pointer transition-colors ${isActive(
+                      "/bridge"
+                    )}`}
+                  >
+                    Bridge
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/gallery"
+                    className={`cursor-pointer transition-colors ${isActive(
+                      "/gallery"
+                    )}`}
+                  >
+                    Gallery
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
+          <ConnectButtonWrapper />
         </div>
-        <ConnectButtonWrapper />
       </div>
       <div className="drawer-side z-20">
         <label

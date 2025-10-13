@@ -6,100 +6,120 @@ import Link from "next/link";
 import MintXIcon from "@/components/ui/Icons/MintXIcon";
 import RippleButton from "@/components/ui/Buttons/RippleButton";
 
-const ConnectButtonWrapper = () => (
-  <Suspense
-    fallback={
-      <div className="w-32 h-10 bg-gray-700 rounded-2xl animate-pulse" />
-    }
-  >
-    <ConnectButton.Custom>
-      {({
-        account,
-        chain,
-        openAccountModal,
-        openChainModal,
-        openConnectModal,
-        mounted,
-      }) => {
-        const ready = mounted;
-        const connected = ready && account && chain;
+const ConnectButtonWrapper = () => {
+  const [isMobile, setIsMobile] = React.useState(false);
 
-        return (
-          <div
-            {...(!ready && {
-              "aria-hidden": true,
-              style: {
-                opacity: 0,
-                pointerEvents: "none",
-                userSelect: "none",
-              },
-            })}
-          >
-            {(() => {
-              if (!connected) {
-                return (
-                  <RippleButton
-                    text="Connect"
-                    onClick={openConnectModal}
-                    active
-                    className="text-sm font-light py-2 px-6"
-                  />
-                );
+  React.useEffect(() => {
+    setIsMobile(/Mobile|Android|iPhone/i.test(navigator.userAgent));
+  }, []);
+
+  return (
+    <Suspense
+      fallback={
+        <div className="w-32 h-10 bg-gray-700 rounded-2xl animate-pulse" />
+      }
+    >
+      <ConnectButton.Custom>
+        {({
+          account,
+          chain,
+          openAccountModal,
+          openChainModal,
+          openConnectModal,
+          mounted,
+        }) => {
+          const ready = mounted;
+          const connected = ready && account && chain;
+
+          // On mobile with ethereum, try direct connection
+          const handleMobileConnect = async () => {
+            if (isMobile && typeof window !== "undefined" && window.ethereum) {
+              try {
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+              } catch (error) {
+                console.error("Mobile connection failed:", error);
               }
+            }
+            openConnectModal();
+          };
 
-              if (chain.unsupported) {
+          return (
+            <div
+              {...(!ready && {
+                "aria-hidden": true,
+                style: {
+                  opacity: 0,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                },
+              })}
+            >
+              {(() => {
+                if (!connected) {
+                  return (
+                    <RippleButton
+                      text="Connect"
+                      onClick={isMobile ? handleMobileConnect : openConnectModal}
+                      active
+                      className="text-sm font-light py-2 px-6"
+                    />
+                  );
+                }
+
+                if (chain.unsupported) {
+                  return (
+                    <RippleButton
+                      text="Wrong network"
+                      onClick={openChainModal}
+                      active
+                      className="text-sm font-light py-2 px-6"
+                    />
+                  );
+                }
+
                 return (
-                  <RippleButton
-                    text="Wrong network"
-                    onClick={openChainModal}
-                    active
-                    className="text-sm font-light py-2 px-6"
-                  />
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={openChainModal}
+                      className="flex items-center gap-2 px-3 py-2 bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-2xl transition-colors border border-white/10"
+                    >
+                      {chain.hasIcon && (
+                        <div
+                          style={{
+                            background: chain.iconBackground,
+                            width: 20,
+                            height: 20,
+                            borderRadius: 999,
+                            overflow: "hidden",
+                          }}
+                        >
+                          {chain.iconUrl && (
+                            <img
+                              alt={chain.name ?? "Chain icon"}
+                              src={chain.iconUrl}
+                              style={{ width: 20, height: 20 }}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </button>
+
+                    <RippleButton
+                      text={account.displayName}
+                      onClick={openAccountModal}
+                      active
+                      className="text-sm font-light py-2 px-6"
+                    />
+                  </div>
                 );
-              }
-
-              return (
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={openChainModal}
-                    className="flex items-center gap-2 px-3 py-2 bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-2xl transition-colors border border-white/10"
-                  >
-                    {chain.hasIcon && (
-                      <div
-                        style={{
-                          background: chain.iconBackground,
-                          width: 20,
-                          height: 20,
-                          borderRadius: 999,
-                          overflow: "hidden",
-                        }}
-                      >
-                        {chain.iconUrl && (
-                          <img
-                            alt={chain.name ?? "Chain icon"}
-                            src={chain.iconUrl}
-                            style={{ width: 20, height: 20 }}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </button>
-
-                  <RippleButton
-                    text={account.displayName}
-                    onClick={openAccountModal}
-                    active
-                    className="text-sm font-light py-2 px-6"
-                  />
-                </div>
-              );
-            })()}
-          </div>
-        );
-      }}
-    </ConnectButton.Custom>
-  </Suspense>
-);
+              })()}
+            </div>
+          );
+        }}
+      </ConnectButton.Custom>
+    </Suspense>
+  );
+};
 
 const Navbar = () => {
   const pathname = usePathname();

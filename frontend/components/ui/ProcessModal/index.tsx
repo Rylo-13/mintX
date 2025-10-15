@@ -75,12 +75,14 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl relative z-[101]"
+            className="bg-[#0D0D0D] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl relative z-[101]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-              <p className="text-gray-400 text-sm">{subtitle}</p>
+              <h2 className="text-3xl font-light text-white tracking-tight mb-2">
+                {title}
+              </h2>
+              <p className="text-gray-400 text-sm font-light">{subtitle}</p>
             </div>
 
             <div className="space-y-3">
@@ -102,7 +104,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
                 >
                   <div className="flex-shrink-0">{getStepIcon(step)}</div>
                   <div className="flex-1">
-                    <h3 className={`font-medium ${getStepTextColor(step)}`}>
+                    <h3 className={`font-light ${getStepTextColor(step)}`}>
                       {step.title}
                     </h3>
                   </div>
@@ -121,7 +123,7 @@ const ProcessModal: React.FC<ProcessModalProps> = ({
                     <AlertIcon />
                   </div>
                   <div className="flex-1">
-                    <p className="text-red-400 text-sm font-medium mb-1">
+                    <p className="text-red-400 text-sm font-light mb-1">
                       Transaction Failed
                     </p>
                     <p className="text-red-300/80 text-xs font-light leading-relaxed">

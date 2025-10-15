@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useAccount, useSwitchChain } from "wagmi";
+import { useChainModal } from "@rainbow-me/rainbowkit";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import mintXABIsepolia from "../../config/abi/mintXsepolia.json";
@@ -14,6 +15,7 @@ import AttributesModal from "@/components/ui/AttributesModal";
 const MintPage: React.FC = () => {
   const { isConnected, chain } = useAccount();
   const { switchChain } = useSwitchChain();
+  const { openChainModal } = useChainModal();
 
   // Image state
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -202,6 +204,8 @@ const MintPage: React.FC = () => {
             isGeneratedTab={isGeneratedTab}
             imageLoaded={imageLoaded}
             onMintNFT={handleMintNFT}
+            chainId={chain?.id}
+            onSwitchToSepolia={openChainModal}
           />
         </div>
       )}

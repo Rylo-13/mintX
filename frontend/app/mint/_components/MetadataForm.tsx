@@ -20,6 +20,8 @@ interface MetadataFormProps {
   isGeneratedTab: boolean;
   imageLoaded: boolean;
   onMintNFT: () => void;
+  chainId?: number;
+  onSwitchToSepolia: () => void;
 }
 
 const MetadataForm: React.FC<MetadataFormProps> = ({
@@ -37,7 +39,10 @@ const MetadataForm: React.FC<MetadataFormProps> = ({
   isGeneratedTab,
   imageLoaded,
   onMintNFT,
+  chainId,
+  onSwitchToSepolia,
 }) => {
+  const isWrongChain = isConnected && chainId !== 11155111;
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-light text-white tracking-tight">
@@ -131,6 +136,15 @@ const MetadataForm: React.FC<MetadataFormProps> = ({
         )}
       </div>
 
+      {isWrongChain && (
+        <Alert
+          type="warning"
+          title="Wrong Network"
+          message="Minting is only available on Sepolia testnet. Please switch networks to continue."
+          className="mb-2"
+        />
+      )}
+
       <ConnectButton.Custom>
         {({ openConnectModal }) => (
           <RippleButton
@@ -138,13 +152,22 @@ const MetadataForm: React.FC<MetadataFormProps> = ({
             text={
               !isConnected
                 ? "Connect Wallet"
+                : isWrongChain
+                ? "Switch to Sepolia"
                 : isMinting
                 ? "Minting..."
                 : "Mint NFT"
             }
-            onClick={!isConnected ? openConnectModal : onMintNFT}
+            onClick={
+              !isConnected
+                ? openConnectModal
+                : isWrongChain
+                ? onSwitchToSepolia
+                : onMintNFT
+            }
             disabled={
               isConnected &&
+              !isWrongChain &&
               (isMinting ||
                 (!selectedImage && !generatedImageUrl) ||
                 (isGeneratedTab && !imageLoaded) ||
@@ -156,7 +179,7 @@ const MetadataForm: React.FC<MetadataFormProps> = ({
         )}
       </ConnectButton.Custom>
 
-      {mintError && (
+      {mintError && !isWrongChain && (
         <Alert
           type="error"
           title="Minting Error"

@@ -32,7 +32,7 @@ const Alert: React.FC<AlertProps> = ({
           border: "border-yellow-500/20",
           titleColor: "text-yellow-400",
           messageColor: "text-yellow-300/80",
-          icon: <InfoIcon />,
+          icon: <ErrorIcon />,
         };
       case "success":
         return {

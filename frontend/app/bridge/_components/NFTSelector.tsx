@@ -32,7 +32,6 @@ const NFTSelector: React.FC<NFTSelectorProps> = ({
       <h2 className="text-3xl font-light text-white tracking-tight">
         Select NFT
       </h2>
-
       <div>
         <label className="text-xs text-gray-400 mb-1.5 block font-light">
           NFT to Bridge

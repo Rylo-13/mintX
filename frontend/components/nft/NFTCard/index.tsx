@@ -22,6 +22,7 @@ interface NFTCardProps {
   contractAddress: string;
   tokenId: string;
   chainId?: number;
+  onImageLoad?: () => void;
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({
@@ -33,6 +34,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   contractAddress,
   tokenId,
   chainId,
+  onImageLoad,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -262,6 +264,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
             width={256}
             height={256}
             priority
+            onLoad={onImageLoad}
           />
           <p className={styles.description}>{nftDescription}</p>
           <div className={styles.attributes}>

@@ -1,7 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import NFTCard from "@/components/nft/NFTCard";
 import RippleButton from "@/components/ui/Buttons/RippleButton";
+import SkeletonCard from "@/components/ui/NFTSkeleton";
 
 interface MintingSuccessProps {
   nftDetails: {
@@ -23,22 +25,30 @@ const MintingSuccess: React.FC<MintingSuccessProps> = ({
   chainId,
   onMintAnother,
 }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <>
-      <h2 className="flex justify-center mt-6 mb-12 text-4xl font-semibold text-white">
-        NFT Minted Successfully!
-      </h2>
       <div className="flex justify-center">
-        <NFTCard
-          imageUrl={nftDetails.image}
-          nftName={nftDetails.nftName}
-          nftDescription={nftDetails.nftDescription}
-          attributes={nftDetails.attributes}
-          transactionHash={nftDetails.transactionHash}
-          contractAddress={contractAddress}
-          tokenId={nftDetails.tokenId || "0x0"}
-          chainId={chainId}
-        />
+        {!imageLoaded && <SkeletonCard />}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: imageLoaded ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+          style={{ display: imageLoaded ? "block" : "none" }}
+        >
+          <NFTCard
+            imageUrl={nftDetails.image}
+            nftName={nftDetails.nftName}
+            nftDescription={nftDetails.nftDescription}
+            attributes={nftDetails.attributes}
+            transactionHash={nftDetails.transactionHash}
+            contractAddress={contractAddress}
+            tokenId={nftDetails.tokenId || "0x0"}
+            chainId={chainId}
+            onImageLoad={() => setImageLoaded(true)}
+          />
+        </motion.div>
       </div>
       <div className="flex justify-center mt-14">
         <RippleButton text="Mint Another NFT" onClick={onMintAnother} active />

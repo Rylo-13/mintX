@@ -4,7 +4,6 @@ import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Providers } from "./providers";
 import Navbar from "@/components/Navbar";
-// import StaticOverlay from "@/components/ui/StaticOverlay";
 import { headers } from "next/headers";
 import { cookieToInitialState } from "wagmi";
 import { getConfig } from "./wagmi";
@@ -33,7 +32,6 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className={`${poppins.className} min-h-screen`}>
         <Providers initialState={initialState}>
-          {/* <StaticOverlay /> */}
           <Navbar />
           {children}
         </Providers>

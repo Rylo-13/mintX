@@ -45,9 +45,9 @@ const BridgePage: React.FC = () => {
       return { address: sepoliaCA, abi: mxABIsepolia };
     } else if (chainId === 43113) {
       return { address: fujiCA, abi: mxABIfuji };
-    } else {
-      throw new Error("Unsupported network");
     }
+    // Return default values when wallet not connected or unsupported chain
+    return { address: sepoliaCA, abi: mxABIsepolia };
   };
 
   const { address: contractAddress, abi: contractABI } = getContractDetails();
@@ -165,57 +165,69 @@ const BridgePage: React.FC = () => {
 
   return (
     <div className="container mx-auto max-w-7xl my-8 px-4 md:px-8 lg:px-12 pb-8">
-      {bridgeError && (
-        <Alert
-          type="error"
-          title="Error"
-          message={getErrorMessage(bridgeError)}
-          className="mb-6"
-        />
+      <h2 className="text-3xl font-light text-white tracking-tight mb-8">
+        Bridge Your NFTs
+      </h2>
+
+      {!isConnected ? (
+        <p className="text-center text-white text-base font-light">
+          Please connect your wallet to bridge your NFTs.
+        </p>
+      ) : (
+        <>
+          {bridgeError && (
+            <Alert
+              type="error"
+              title="Error"
+              message={getErrorMessage(bridgeError)}
+              className="mb-6"
+            />
+          )}
+
+          {bridgeStatus && (
+            <Alert type="success" message={bridgeStatus} className="mb-6" />
+          )}
+
+          {/* Pending URI Restoration Section */}
+          <MetadataRestoreCard
+            pendingURIs={pendingURIs}
+            isRestoringURI={isRestoringURI}
+            onRestoreURI={handleRestore}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column - NFT Selection & Preview */}
+            <NFTSelector
+              nfts={nfts}
+              selectedTokenId={selectedTokenId}
+              onSelectToken={setSelectedTokenId}
+              isBridging={isBridging}
+            />
+
+            {/* Right Column - Bridge Details */}
+            <BridgeForm
+              selectedNFT={selectedNFT || null}
+              selectedTargetChain={selectedTargetChain}
+              targetChainOptions={targetChainOptions}
+              onSelectTargetChain={setSelectedTargetChain}
+              isConnected={isConnected}
+              isBridging={isBridging}
+              onBridge={handleBridge}
+            />
+          </div>
+
+          {/* Bridging Modal */}
+          <ProcessModal
+            isOpen={showBridgeModal}
+            steps={bridgingSteps}
+            currentStep={currentBridgingStep}
+            error={bridgingModalError}
+            onClose={bridgingModalError ? handleCloseBridgeModal : undefined}
+            title="Bridging Your NFT"
+            subtitle="This will take a moment..."
+          />
+        </>
       )}
-
-      {bridgeStatus && (
-        <Alert type="success" message={bridgeStatus} className="mb-6" />
-      )}
-
-      {/* Pending URI Restoration Section */}
-      <MetadataRestoreCard
-        pendingURIs={pendingURIs}
-        isRestoringURI={isRestoringURI}
-        onRestoreURI={handleRestore}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Column - NFT Selection & Preview */}
-        <NFTSelector
-          nfts={nfts}
-          selectedTokenId={selectedTokenId}
-          onSelectToken={setSelectedTokenId}
-          isBridging={isBridging}
-        />
-
-        {/* Right Column - Bridge Details */}
-        <BridgeForm
-          selectedNFT={selectedNFT || null}
-          selectedTargetChain={selectedTargetChain}
-          targetChainOptions={targetChainOptions}
-          onSelectTargetChain={setSelectedTargetChain}
-          isConnected={isConnected}
-          isBridging={isBridging}
-          onBridge={handleBridge}
-        />
-      </div>
-
-      {/* Bridging Modal */}
-      <ProcessModal
-        isOpen={showBridgeModal}
-        steps={bridgingSteps}
-        currentStep={currentBridgingStep}
-        error={bridgingModalError}
-        onClose={bridgingModalError ? handleCloseBridgeModal : undefined}
-        title="Bridging Your NFT"
-        subtitle="This will take a moment..."
-      />
     </div>
   );
 };

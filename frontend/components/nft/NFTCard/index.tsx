@@ -123,7 +123,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleMouseUp);
     setCursorStyle("pointer");
-    if (!isDragging.current) {
+    if (!isDragging.current && cardRef.current) {
       handleFlip(e);
     } else {
       isDragging.current = false;

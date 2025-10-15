@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import NFTCard from "@/components/features/NFTCard";
+import NFTCard from "@/components/nft/NFTCard";
 import SkeletonCard from "@/components/ui/NFTSkeleton";
 import { useAccount, useReadContract, usePublicClient } from "wagmi";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -144,7 +144,7 @@ const Page: React.FC = () => {
           Please connect your wallet to view your NFTs.
         </p>
       ) : isPending ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
           {Array.from({ length: NFTsPerPage }).map((_, index) => (
             <SkeletonCard key={`skeleton-${index}`} />
           ))}
@@ -154,7 +154,7 @@ const Page: React.FC = () => {
           No NFTs found.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
           {nfts.map((nft, index) => {
             const { address: contractAddress } = getContractDetails();
             return (

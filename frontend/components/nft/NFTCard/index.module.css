@@ -1,8 +1,9 @@
 .cardContainer {
   perspective: 1000px;
-  width: 340px;
+  width: 100%;
+  min-width: 260px;
+  max-width: 340px;
   height: 480px;
-  margin: auto;
   user-select: none;
   position: relative;
 }

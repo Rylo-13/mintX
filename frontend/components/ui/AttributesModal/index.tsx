@@ -48,70 +48,58 @@ const AttributesModal: React.FC<AttributesModalProps> = ({
         {/* Header */}
         <div className="p-6 pb-5">
           <h3 className="text-2xl font-light text-white tracking-tight mb-2">
-            Add Properties
+            Add Traits
           </h3>
           <p className="text-xs text-gray-400 font-light leading-relaxed">
-            Properties are key-value pairs that you can use for your NFT
-            utilities. You can set multiple properties for your NFT.
+            Traits are key-value pairs that describe your NFT's unique
+            characteristics. You can set multiple traits for your NFT.
           </p>
         </div>
 
         {/* Content */}
         <div className="px-6">
-          {/* Column Headers */}
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div>
-              <label className="text-xs text-gray-400 font-light">Type</label>
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 font-light">Name</label>
-            </div>
-          </div>
-
           {/* Attribute Rows */}
           <div className="space-y-2.5">
             {attributes.map((attribute, index) => (
-              <div key={index} className="grid grid-cols-2 gap-3 items-center">
+              <div key={index} className="flex gap-2 items-center">
                 <input
-                  className="px-3 py-2 bg-transparent border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                  className="flex-1 min-w-0 px-3 py-2 bg-transparent border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
                   type="text"
-                  placeholder="Key"
+                  placeholder="Type"
                   value={attribute.key}
                   onChange={(e) =>
                     handleAttributeChange(index, "key", e.target.value)
                   }
                   maxLength={10}
                 />
-                <div className="flex gap-2 items-center">
-                  <input
-                    className="flex-1 px-3 py-2 bg-transparent border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
-                    type="text"
-                    placeholder="Value"
-                    value={attribute.value}
-                    onChange={(e) =>
-                      handleAttributeChange(index, "value", e.target.value)
-                    }
-                    maxLength={10}
-                  />
-                  <button
-                    className="hover:bg-white/5 rounded-full transition-colors flex-shrink-0 w-8 h-8 flex items-center justify-center"
-                    onClick={() => handleDeleteAttribute(index)}
+                <input
+                  className="flex-1 min-w-0 px-3 py-2 bg-transparent border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF10F0] transition-colors font-light"
+                  type="text"
+                  placeholder="Name"
+                  value={attribute.value}
+                  onChange={(e) =>
+                    handleAttributeChange(index, "value", e.target.value)
+                  }
+                  maxLength={10}
+                />
+                <button
+                  className="hover:bg-white/5 rounded-full transition-colors flex-shrink-0 w-8 h-8 flex items-center justify-center"
+                  onClick={() => handleDeleteAttribute(index)}
+                >
+                  <svg
+                    className="w-4 h-4 text-gray-400 hover:text-white transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      className="w-4 h-4 text-gray-400 hover:text-white transition-colors"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </div>
             ))}
           </div>

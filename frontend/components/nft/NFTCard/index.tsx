@@ -8,7 +8,7 @@ import axios from "axios";
 import { RingLoader } from "react-spinners";
 
 import Image from "next/image";
-import OpenSeaIcon from "@/components/ui/Icons/OpenseaIcon";
+import RaribleIcon from "@/components/ui/Icons/RaribleIcon";
 import EthereumIcon from "@/components/ui/Icons/EthereumIcon";
 import AvalancheIcon from "@/components/ui/Icons/AvalancheIcon";
 import { getIPFSUrl } from "@/utils/ipfs";
@@ -18,11 +18,12 @@ interface NFTCardProps {
   nftName: string;
   nftDescription: string;
   attributes: { key: string; value: string }[];
-  transactionHash: string;
-  contractAddress: string;
-  tokenId: string;
+  transactionHash?: string;
+  contractAddress?: string;
+  tokenId?: string;
   chainId?: number;
   onImageLoad?: () => void;
+  isPreview?: boolean;
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({
@@ -35,6 +36,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   tokenId,
   chainId,
   onImageLoad,
+  isPreview = false,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -49,8 +51,13 @@ const NFTCard: React.FC<NFTCardProps> = ({
 
   const uploadImageToPinata = useRef(false);
 
+  // Filter out empty attributes
+  const filteredAttributes = attributes.filter(
+    (attr) => attr.key.trim() !== "" && attr.value.trim() !== ""
+  );
+
   useEffect(() => {
-    if (qrCodeUrl || uploadImageToPinata.current) return;
+    if (isPreview || qrCodeUrl || uploadImageToPinata.current) return;
 
     const uploadImage = async (imageUrl: string) => {
       const formData = new FormData();
@@ -267,44 +274,52 @@ const NFTCard: React.FC<NFTCardProps> = ({
             onLoad={onImageLoad}
           />
           <p className={styles.description}>{nftDescription}</p>
-          <div className={styles.attributes}>
-            {attributes.map((attr, index) => (
-              <span key={index} className={styles.attribute}>
-                {attr.key}: {attr.value}
-              </span>
-            ))}
-          </div>
+          {filteredAttributes.length > 0 && (
+            <div className={styles.attributes}>
+              {filteredAttributes.map((attr, index) => (
+                <span key={index} className={styles.attribute}>
+                  {attr.key}: {attr.value}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Back Side */}
         <div className={`${styles.cardSide} ${styles.cardBack}`}>
-          {qrCodeUrl ? (
-            <QRCode value={qrCodeUrl} size={200} />
+          {isPreview ? (
+            <div className="text-gray-500 text-sm font-light">Preview</div>
           ) : (
-            <RingLoader color="#ffffff" size={130} />
+            <>
+              {qrCodeUrl ? (
+                <QRCode value={qrCodeUrl} size={200} />
+              ) : (
+                <RingLoader color="#ffffff" size={130} />
+              )}
+              {transactionHash ? (
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.transactionHash}
+                >
+                  TX: {transactionHash.slice(0, 16)}...
+                </a>
+              ) : (
+                ""
+              )}
+              <>
+                <a
+                  href={`https://testnet.rarible.com/token/${contractAddress}:${decimalTokenId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-10 h-10 cursor-pointer"
+                >
+                  <RaribleIcon />
+                </a>
+              </>
+            </>
           )}
-          {transactionHash ? (
-            <a
-              href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.transactionHash}
-            >
-              TX: {transactionHash.slice(0, 16)}...
-            </a>
-          ) : (
-            ""
-          )}
-          <>
-            <a
-              href={`https://testnets.opensea.io/assets/sepolia/${contractAddress}/${decimalTokenId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 cursor-pointer"
-            >
-              <OpenSeaIcon />
-            </a>
-          </>
         </div>
       </motion.div>
     </div>

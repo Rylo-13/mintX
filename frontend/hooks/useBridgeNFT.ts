@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useConfig, useWriteContract, usePublicClient } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { ethers } from "ethers";
+import { getErrorMessage } from "@/utils/errorHandler";
 
 export type BridgingStep = {
   id: string;
@@ -267,12 +268,7 @@ export const useBridgeNFT = ({
       }, 1000);
     } catch (error) {
       console.error("Error during bridging:", error);
-      const errorMessage =
-        error instanceof Error
-          ? `Bridging failed: ${error.message}`
-          : "Bridging failed: An unknown error occurred.";
-
-      setBridgingModalError(errorMessage);
+      setBridgingModalError(`Bridging failed: ${getErrorMessage(error)}`);
 
       // Mark current step as error
       if (currentBridgingStep) {

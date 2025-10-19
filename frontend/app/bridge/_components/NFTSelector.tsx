@@ -15,6 +15,7 @@ interface NFTSelectorProps {
   selectedTokenId: number | null;
   onSelectToken: (tokenId: number) => void;
   isBridging: boolean;
+  isLoading?: boolean;
 }
 
 const NFTSelector: React.FC<NFTSelectorProps> = ({
@@ -22,6 +23,7 @@ const NFTSelector: React.FC<NFTSelectorProps> = ({
   selectedTokenId,
   onSelectToken,
   isBridging,
+  isLoading = false,
 }) => {
   const selectedNFT = selectedTokenId
     ? nfts.find((nft) => nft.value === selectedTokenId.toString())
@@ -43,12 +45,17 @@ const NFTSelector: React.FC<NFTSelectorProps> = ({
               !nft.hasURI ? " ⚠️ No Metadata" : ""
             }`,
           }))}
-          value={selectedTokenId}
+          value={selectedTokenId !== null ? selectedTokenId.toString() : null}
           onChange={(value) => onSelectToken(Number(value))}
           placeholder={
-            nfts.length === 0 ? "No NFTs available" : "Choose an NFT..."
+            isLoading
+              ? "Loading your NFTs..."
+              : nfts.length === 0
+                ? "No NFTs available"
+                : "Choose an NFT..."
           }
-          disabled={isBridging}
+          disabled={isBridging || isLoading}
+          isLoading={isLoading}
         />
       </div>
 

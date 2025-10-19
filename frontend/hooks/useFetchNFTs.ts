@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { usePublicClient } from "wagmi";
 import { getIPFSUrl } from "@/utils/ipfs";
+import { getErrorMessage } from "@/utils/errorHandler";
 
 export interface NFTOption {
   value: string;
@@ -13,168 +14,150 @@ export interface NFTOption {
 interface UseFetchNFTsParams {
   isConnected: boolean;
   address: `0x${string}` | undefined;
-  chainId: number;
-  sepoliaCA: `0x${string}`;
-  fujiCA: `0x${string}`;
+  chainId: number | undefined;
+  contractAddress: `0x${string}` | undefined;
+  contractABI: any;
+  enabled?: boolean;
 }
+
+const minimalERC721ABI = [
+  {
+    inputs: [{ internalType: "address", name: "owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "owner", type: "address" },
+      { internalType: "uint256", name: "index", type: "uint256" },
+    ],
+    name: "tokenOfOwnerByIndex",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "tokenURI",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
 
 export const useFetchNFTs = ({
   isConnected,
   address,
   chainId,
-  sepoliaCA,
-  fujiCA,
+  contractAddress,
+  contractABI,
+  enabled = true,
 }: UseFetchNFTsParams) => {
   const publicClient = usePublicClient();
-  const [nfts, setNfts] = useState<NFTOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchNFTs = useCallback(async () => {
-    if (!isConnected || !address || !publicClient) {
-      setNfts([]);
-      return;
+  const fetchNFTsLogic = async (): Promise<NFTOption[]> => {
+    if (!isConnected || !address || !publicClient || !contractAddress || !chainId) {
+      return [];
     }
 
-    setIsLoading(true);
-    setError(null);
+    console.log("=== FETCHING NFTs ===");
+    console.log("Chain ID:", chainId);
+    console.log("User address:", address);
+    console.log("Contract address:", contractAddress);
 
-    try {
-      console.log("=== FETCHING NFTs ===");
-      console.log("Chain ID:", chainId);
-      console.log("User address:", address);
+    // Check if contract exists
+    const code = await publicClient.getBytecode({ address: contractAddress });
+    if (!code || code === "0x") {
+      throw new Error("Contract not found at the specified address");
+    }
 
-      const minimalERC721ABI = [
-        {
-          inputs: [{ internalType: "address", name: "owner", type: "address" }],
-          name: "balanceOf",
-          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            { internalType: "address", name: "owner", type: "address" },
-            { internalType: "uint256", name: "index", type: "uint256" },
-          ],
-          name: "tokenOfOwnerByIndex",
-          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
-          name: "tokenURI",
-          outputs: [{ internalType: "string", name: "", type: "string" }],
-          stateMutability: "view",
-          type: "function",
-        },
-      ];
+    // Get NFT count
+    const nftCount = (await publicClient.readContract({
+      address: contractAddress,
+      abi: minimalERC721ABI,
+      functionName: "balanceOf",
+      args: [address],
+    })) as bigint;
 
-      const nftOptions: NFTOption[] = [];
-      let currentCA: `0x${string}`;
+    console.log("NFT count:", nftCount.toString());
 
-      if (chainId === 11155111) {
-        currentCA = sepoliaCA;
-      } else if (chainId === 43113) {
-        currentCA = fujiCA;
-      } else {
-        setError("Unsupported network");
-        setIsLoading(false);
-        return;
-      }
+    if (Number(nftCount) === 0) {
+      return [];
+    }
 
-      // Check if contract exists
-      const code = await publicClient.getBytecode({ address: currentCA });
-      if (!code || code === "0x") {
-        setError("Contract not found at the specified address");
-        setIsLoading(false);
-        return;
-      }
+    const nftOptions: NFTOption[] = [];
 
-      const nftCount = (await publicClient.readContract({
-        address: currentCA,
-        abi: minimalERC721ABI,
-        functionName: "balanceOf",
-        args: [address],
-      })) as bigint;
+    // Fetch each NFT
+    for (let i = 0; i < Number(nftCount); i++) {
+      try {
+        const tokenId = (await publicClient.readContract({
+          address: contractAddress,
+          abi: minimalERC721ABI,
+          functionName: "tokenOfOwnerByIndex",
+          args: [address, BigInt(i)],
+        })) as bigint;
 
-      console.log("NFT count:", nftCount.toString());
+        const tokenURI = (await publicClient.readContract({
+          address: contractAddress,
+          abi: minimalERC721ABI,
+          functionName: "tokenURI",
+          args: [tokenId],
+        })) as string;
 
-      if (Number(nftCount) === 0) {
-        setNfts([]);
-        setIsLoading(false);
-        return;
-      }
+        const hasURI: boolean = Boolean(tokenURI && tokenURI.length > 0);
+        let nftName = `Token #${tokenId.toString()}`;
+        let imageUrl = undefined;
+        let metadata = undefined;
 
-      for (let i = 0; i < Number(nftCount); i++) {
-        try {
-          const tokenId = (await publicClient.readContract({
-            address: currentCA,
-            abi: minimalERC721ABI,
-            functionName: "tokenOfOwnerByIndex",
-            args: [address, BigInt(i)],
-          })) as bigint;
+        if (hasURI) {
+          try {
+            const resolvedTokenURI = getIPFSUrl(tokenURI);
+            const response = await fetch(resolvedTokenURI);
+            if (response.ok) {
+              metadata = await response.json();
+              nftName = metadata.name || nftName;
 
-          const tokenURI = (await publicClient.readContract({
-            address: currentCA,
-            abi: minimalERC721ABI,
-            functionName: "tokenURI",
-            args: [tokenId],
-          })) as string;
-
-          const hasURI: boolean = Boolean(tokenURI && tokenURI.length > 0);
-          let nftName = `Token #${tokenId.toString()}`;
-          let imageUrl = undefined;
-          let metadata = undefined;
-
-          if (hasURI) {
-            try {
-              const resolvedTokenURI = getIPFSUrl(tokenURI);
-              const response = await fetch(resolvedTokenURI);
-              if (response.ok) {
-                metadata = await response.json();
-                nftName = metadata.name || nftName;
-
-                // Get image URL
-                if (metadata.image) {
-                  imageUrl = getIPFSUrl(metadata.image);
-                }
+              // Get image URL
+              if (metadata.image) {
+                imageUrl = getIPFSUrl(metadata.image);
               }
-            } catch (fetchError) {
-              console.error("Error fetching metadata:", fetchError);
             }
+          } catch (fetchError) {
+            console.error("Error fetching metadata:", fetchError);
           }
-
-          nftOptions.push({
-            value: tokenId.toString(),
-            label: nftName,
-            hasURI,
-            imageUrl,
-            metadata,
-          });
-        } catch (tokenError) {
-          console.error(`Error fetching token at index ${i}:`, tokenError);
         }
+
+        nftOptions.push({
+          value: tokenId.toString(),
+          label: nftName,
+          hasURI,
+          imageUrl,
+          metadata,
+        });
+      } catch (tokenError) {
+        console.error(`Error fetching token at index ${i}:`, tokenError);
       }
-
-      setNfts(nftOptions);
-    } catch (error) {
-      console.error("Error fetching NFTs:", error);
-      setError(`Failed to fetch NFTs: ${error}`);
-    } finally {
-      setIsLoading(false);
     }
-  }, [isConnected, address, publicClient, chainId, sepoliaCA, fujiCA]);
 
-  useEffect(() => {
-    fetchNFTs();
-  }, [fetchNFTs]);
+    return nftOptions;
+  };
+
+  const query = useQuery({
+    queryKey: ["nfts", chainId, address, contractAddress],
+    queryFn: fetchNFTsLogic,
+    enabled: enabled && isConnected && !!address && !!publicClient && !!contractAddress,
+    staleTime: 30000, // 30 seconds
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
 
   return {
-    nfts,
-    isLoading,
-    error,
-    refetch: fetchNFTs,
+    nfts: query.data || [],
+    isLoading: query.isPending,
+    error: query.error ? getErrorMessage(query.error) : null,
+    refetch: query.refetch,
+    isRefetching: query.isRefetching,
   };
 };

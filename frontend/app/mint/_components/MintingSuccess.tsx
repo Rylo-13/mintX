@@ -29,26 +29,32 @@ const MintingSuccess: React.FC<MintingSuccessProps> = ({
 
   return (
     <>
-      <div className="flex justify-center">
-        {!imageLoaded && <SkeletonCard />}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: imageLoaded ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-          style={{ display: imageLoaded ? "block" : "none" }}
-        >
-          <NFTCard
-            imageUrl={nftDetails.image}
-            nftName={nftDetails.nftName}
-            nftDescription={nftDetails.nftDescription}
-            attributes={nftDetails.attributes}
-            transactionHash={nftDetails.transactionHash}
-            contractAddress={contractAddress}
-            tokenId={nftDetails.tokenId || "0x0"}
-            chainId={chainId}
-            onImageLoad={() => setImageLoaded(true)}
-          />
-        </motion.div>
+      <div className="flex justify-center items-start w-full">
+        <div className="w-full max-w-[340px]">
+          {!imageLoaded && (
+            <div className="absolute">
+              <SkeletonCard />
+            </div>
+          )}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: imageLoaded ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ visibility: imageLoaded ? "visible" : "hidden" }}
+          >
+            <NFTCard
+              imageUrl={nftDetails.image}
+              nftName={nftDetails.nftName}
+              nftDescription={nftDetails.nftDescription}
+              attributes={nftDetails.attributes}
+              transactionHash={nftDetails.transactionHash}
+              contractAddress={contractAddress}
+              tokenId={nftDetails.tokenId || "0x0"}
+              chainId={chainId}
+              onImageLoad={() => setImageLoaded(true)}
+            />
+          </motion.div>
+        </div>
       </div>
       <div className="flex justify-center mt-14">
         <RippleButton text="Mint Another NFT" onClick={onMintAnother} active />

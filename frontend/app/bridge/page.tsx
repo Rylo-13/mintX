@@ -53,12 +53,12 @@ const BridgePage: React.FC = () => {
   const { address: contractAddress, abi: contractABI } = getContractDetails();
 
   // Fetch NFTs
-  const { nfts, error: fetchError, refetch } = useFetchNFTs({
+  const { nfts, error: fetchError, isLoading: isLoadingNFTs, refetch } = useFetchNFTs({
     isConnected,
     address,
     chainId,
-    sepoliaCA,
-    fujiCA,
+    contractAddress,
+    contractABI,
   });
 
   // Bridge logic
@@ -155,11 +155,7 @@ const BridgePage: React.FC = () => {
       await handleRestoreURI(tokenId, pendingURI);
       loadPendingURIs();
     } catch (error) {
-      setBridgeError(
-        `Failed to restore metadata: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      setBridgeError(`Failed to restore metadata: ${getErrorMessage(error)}`);
     }
   };
 
@@ -175,6 +171,15 @@ const BridgePage: React.FC = () => {
         </p>
       ) : (
         <>
+          {fetchError && (
+            <Alert
+              type="error"
+              title="Failed to load NFTs"
+              message={getErrorMessage(fetchError)}
+              className="mb-6"
+            />
+          )}
+
           {bridgeError && (
             <Alert
               type="error"
@@ -202,6 +207,7 @@ const BridgePage: React.FC = () => {
               selectedTokenId={selectedTokenId}
               onSelectToken={setSelectedTokenId}
               isBridging={isBridging}
+              isLoading={isLoadingNFTs}
             />
 
             {/* Right Column - Bridge Details */}

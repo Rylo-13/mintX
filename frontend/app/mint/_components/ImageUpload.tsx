@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import NFTCard from "@/components/nft/NFTCard";
 import UploadIcon from "@/components/ui/Icons/UploadIcon";
 import { RingLoader } from "react-spinners";
 import Input from "@/components/ui/Input";
@@ -24,6 +24,10 @@ interface ImageUploadProps {
   onFileInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearImage: () => void;
   onGenerateImage: () => void;
+  nftName: string;
+  nftDescription: string;
+  attributes: { key: string; value: string }[];
+  chainId?: number;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -43,6 +47,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onFileInputChange,
   onClearImage,
   onGenerateImage,
+  nftName,
+  nftDescription,
+  attributes,
+  chainId,
 }) => {
   return (
     <div className="space-y-6">
@@ -119,15 +127,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         {!isGeneratedTab && (
           <div className="relative">
-            <input
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-              className={`absolute inset-0 opacity-0 cursor-pointer ${
-                showMintingModal ? "pointer-events-none" : "z-10"
-              }`}
-              onChange={onFileInputChange}
-              disabled={showMintingModal}
-            />
+            {!selectedImage && (
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                className={`absolute inset-0 opacity-0 cursor-pointer ${
+                  showMintingModal ? "pointer-events-none" : "z-10"
+                }`}
+                onChange={onFileInputChange}
+                disabled={showMintingModal}
+              />
+            )}
             {!selectedImage && (
               <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-white/10 rounded-2xl text-center text-gray-400 hover:border-white/20 transition-colors bg-[#0D0D0D]">
                 <UploadIcon className="w-16 h-16 mb-4" />
@@ -145,18 +155,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             {selectedImage && (
               <div className="flex justify-center">
                 <motion.div
-                  className="relative"
+                  className="relative w-full max-w-[340px]"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Image
-                    src={uploadedImageUrl!}
-                    alt="Uploaded Image"
-                    className="rounded-2xl relative z-0 object-fill"
-                    width={320}
-                    height={320}
-                    priority
+                  <NFTCard
+                    imageUrl={uploadedImageUrl!}
+                    nftName={nftName || "Untitled NFT"}
+                    nftDescription={nftDescription || "No description"}
+                    attributes={attributes}
+                    chainId={chainId}
+                    isPreview={true}
                   />
                   {!showMintingModal && (
                     <button
@@ -205,23 +215,23 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             {generatedImageUrl && (
               <div className="flex justify-center">
                 <motion.div
-                  className="relative"
+                  className="relative w-full max-w-[340px]"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Image
-                    src={generatedImageUrl!}
-                    alt="Generated Image"
-                    className="rounded-2xl relative z-0 object-fill"
-                    width={320}
-                    height={320}
-                    priority
-                    onLoad={() => setImageLoaded(true)}
+                  <NFTCard
+                    imageUrl={generatedImageUrl}
+                    nftName={nftName || "Untitled NFT"}
+                    nftDescription={nftDescription || "No description"}
+                    attributes={attributes}
+                    chainId={chainId}
+                    isPreview={true}
+                    onImageLoad={() => setImageLoaded(true)}
                   />
                   {imageLoaded && !showMintingModal && (
                     <button
-                      className="absolute -top-3 -right-3 w-8 h-8 bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-full flex items-center justify-center transition-colors border border-white/10 group"
+                      className="absolute -top-3 -right-3 w-8 h-8 bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-full flex items-center justify-center transition-colors border border-white/10 z-20 group"
                       onClick={onClearImage}
                     >
                       <svg

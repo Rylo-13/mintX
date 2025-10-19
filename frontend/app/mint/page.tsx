@@ -186,6 +186,10 @@ const MintPage: React.FC = () => {
             onFileInputChange={handleFileInputChange}
             onClearImage={handleClearImage}
             onGenerateImage={handleGenerateImage}
+            nftName={nftName}
+            nftDescription={nftDescription}
+            attributes={attributes}
+            chainId={chain?.id}
           />
 
           {/* Right Column - NFT Metadata */}
@@ -205,7 +209,7 @@ const MintPage: React.FC = () => {
             imageLoaded={imageLoaded}
             onMintNFT={handleMintNFT}
             chainId={chain?.id}
-            onSwitchToSepolia={openChainModal}
+            onSwitchToSepolia={() => openChainModal?.()}
           />
         </div>
       )}

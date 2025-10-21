@@ -9,6 +9,7 @@ import { RingLoader } from "react-spinners";
 
 import Image from "next/image";
 import RaribleIcon from "@/components/ui/Icons/RaribleIcon";
+import JoepegsIcon from "@/components/ui/Icons/JoepegsIcon";
 import EthereumIcon from "@/components/ui/Icons/EthereumIcon";
 import AvalancheIcon from "@/components/ui/Icons/AvalancheIcon";
 import { getIPFSUrl } from "@/utils/ipfs";
@@ -241,6 +242,28 @@ const NFTCard: React.FC<NFTCardProps> = ({
     return null;
   };
 
+  const getMarketplaceInfo = () => {
+    // Sepolia (Ethereum testnet) - Use Rarible
+    if (chainId === 11155111) {
+      return {
+        url: `https://testnet.rarible.com/token/${contractAddress}:${decimalTokenId}`,
+        icon: <RaribleIcon />
+      };
+    }
+    // Fuji (Avalanche testnet) - Use Joepegs
+    if (chainId === 43113) {
+      return {
+        url: `https://fuji.joepegs.com/item/avalanche/${contractAddress}/${decimalTokenId}`,
+        icon: <JoepegsIcon />
+      };
+    }
+    // Default fallback to Rarible
+    return {
+      url: `https://testnet.rarible.com/token/${contractAddress}:${decimalTokenId}`,
+      icon: <RaribleIcon />
+    };
+  };
+
   return (
     <div
       className={styles.cardContainer}
@@ -310,12 +333,12 @@ const NFTCard: React.FC<NFTCardProps> = ({
               )}
               <>
                 <a
-                  href={`https://testnet.rarible.com/token/${contractAddress}:${decimalTokenId}`}
+                  href={getMarketplaceInfo().url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center w-10 h-10 cursor-pointer"
                 >
-                  <RaribleIcon />
+                  {getMarketplaceInfo().icon}
                 </a>
               </>
             </>
